@@ -1,0 +1,145 @@
+import { google } from "googleapis";
+import { getTokens, setTokens, type Tokens } from "../store";
+
+const SCOPE = "https://www.googleapis.com/auth/calendar.events";
+
+export function calendarConfigured() {
+  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+}
+
+function redirectUri() {
+  return (
+    process.env.GOOGLE_REDIRECT_URI ||
+    `${process.env.OAUTH_REDIRECT_BASE_URL || "http://localhost:3000"}/api/calendar/callback`
+  );
+}
+
+export function oauthClient() {
+  return new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri()
+  );
+}
+
+export function authUrl(state: string) {
+  return oauthClient().generateAuthUrl({
+    access_type: "offline",
+    prompt: "consent",
+    scope: [SCOPE],
+    state,
+  });
+}
+
+export async function exchangeCode(code: string): Promise<Tokens> {
+  const client = oauthClient();
+  const { tokens } = await client.getToken(code);
+  let account: string | undefined;
+  try {
+    client.setCredentials(tokens);
+    const oauth2 = google.oauth2({ version: "v2", auth: client });
+    const me = await oauth2.userinfo.get();
+    account = me.data.email ?? undefined;
+  } catch {
+    /* userinfo scope not granted — fine */
+  }
+  return {
+    accessToken: tokens.access_token!,
+    refreshToken: tokens.refresh_token ?? undefined,
+    expiresAt: tokens.expiry_date ?? undefined,
+    scope: tokens.scope ?? SCOPE,
+    account,
+  };
+}
+
+/** Authenticated calendar client, refreshing tokens if needed. */
+async function calendarClient() {
+  const t = getTokens("calendar");
+  if (!t) return null;
+  const client = oauthClient();
+  client.setCredentials({
+    access_token: t.accessToken,
+    refresh_token: t.refreshToken,
+    expiry_date: t.expiresAt,
+  });
+  // persist refreshed tokens
+  client.on("tokens", (nt) => {
+    setTokens("calendar", {
+      accessToken: nt.access_token ?? t.accessToken,
+      refreshToken: nt.refresh_token ?? t.refreshToken,
+      expiresAt: nt.expiry_date ?? t.expiresAt,
+      scope: t.scope,
+      account: t.account,
+    });
+  });
+  return google.calendar({ version: "v3", auth: client });
+}
+
+export function calendarConnected() {
+  return Boolean(getTokens("calendar"));
+}
+
+/** Create an event/hold. Returns the created event id, or null in mock mode. */
+export async function createEvent(opts: {
+  summary: string;
+  startISO: string;
+  endISO: string;
+  description?: string;
+}): Promise<string | null> {
+  const cal = await calendarClient();
+  if (!cal) return null;
+  const res = await cal.events.insert({
+    calendarId: "primary",
+    requestBody: {
+      summary: opts.summary,
+      description: opts.description,
+      start: { dateTime: opts.startISO },
+      end: { dateTime: opts.endISO },
+      colorId: "9",
+    },
+  });
+  return res.data.id ?? null;
+}
+
+export async function moveEvent(eventId: string, startISO: string, endISO: string) {
+  const cal = await calendarClient();
+  if (!cal) return false;
+  await cal.events.patch({
+    calendarId: "primary",
+    eventId,
+    requestBody: { start: { dateTime: startISO }, end: { dateTime: endISO } },
+  });
+  return true;
+}
+
+export async function deleteEvent(eventId: string) {
+  const cal = await calendarClient();
+  if (!cal) return false;
+  await cal.events.delete({ calendarId: "primary", eventId });
+  return true;
+}
+
+export async function listToday() {
+  const cal = await calendarClient();
+  if (!cal) return [];
+  const now = new Date();
+  const start = new Date(now); start.setHours(0, 0, 0, 0);
+  const end = new Date(now); end.setHours(23, 59, 59, 999);
+  const res = await cal.events.list({
+    calendarId: "primary",
+    timeMin: start.toISOString(),
+    timeMax: end.toISOString(),
+    singleEvents: true,
+    orderBy: "startTime",
+  });
+  return res.data.items ?? [];
+}
+
+/** Helper: build today's ISO for a "HH:MM" time. */
+export function todayAt(hhmm: string, durationMin = 30): { startISO: string; endISO: string } {
+  const [h, m] = hhmm.split(":").map(Number);
+  const start = new Date();
+  start.setHours(h, m, 0, 0);
+  const end = new Date(start.getTime() + durationMin * 60_000);
+  return { startISO: start.toISOString(), endISO: end.toISOString() };
+}

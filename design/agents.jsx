@@ -1,0 +1,135 @@
+// Zenra — agent identities, glyphs, icons
+// Exported to window so other Babel script blocks can use them.
+
+const AGENTS = {
+  sage: {
+    id: "sage", name: "Sage", role: "Recovery", color: "var(--ag-sage)",
+    blurb: "Watches your nervous system. Protects your battery."
+  },
+  lyra: {
+    id: "lyra", name: "Lyra", role: "Sleep", color: "var(--ag-lyra)",
+    blurb: "Designs your wind-down and wake. Knows your chronotype."
+  },
+  atlas: {
+    id: "atlas", name: "Atlas", role: "Movement", color: "var(--ag-atlas)",
+    blurb: "Programs training to fit how you actually feel today."
+  },
+  orchid: {
+    id: "orchid", name: "Orchid", role: "Calendar", color: "var(--ag-orchid)",
+    blurb: "Choreographs your day around your real capacity."
+  },
+  echo: {
+    id: "echo", name: "Echo", role: "Focus", color: "var(--ag-echo)",
+    blurb: "Quiets your inbox + Slack when your brain needs it."
+  },
+  fern: {
+    id: "fern", name: "Fern", role: "Nutrition", color: "var(--ag-fern)",
+    blurb: "Plans meals against today's load, not yesterday's."
+  },
+  iris: {
+    id: "iris", name: "Iris", role: "Reflection", color: "var(--ag-iris)",
+    blurb: "Asks the question that turns a day into a lesson."
+  },
+};
+
+// Simple glyphs — geometric, agent-specific, never illustrative.
+function AgentGlyph({ agent, size = "md" }) {
+  const a = typeof agent === "string" ? AGENTS[agent] : agent;
+  const cls = "zr-glyph" + (size === "lg" ? " lg" : size === "xl" ? " xl" : "");
+  const style = { "--ag": a.color };
+  return (
+    <span className={cls} style={style} aria-label={a.name}>
+      <GlyphSvg id={a.id} />
+    </span>
+  );
+}
+
+function GlyphSvg({ id }) {
+  switch (id) {
+    case "sage": // concentric arcs = recovery, layered
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+          <path d="M4 16c2-4 6-4 8 0s6 4 8 0" />
+          <path d="M4 11c2-4 6-4 8 0s6 4 8 0" opacity=".55" />
+        </svg>
+      );
+    case "lyra": // crescent moon
+      return (
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 4a8 8 0 1 0 4 14A7 7 0 0 1 16 4z" />
+        </svg>
+      );
+    case "atlas": // upward chevron / mountain
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" strokeLinecap="round">
+          <path d="M3 19l6-10 4 6 3-4 5 8z" />
+        </svg>
+      );
+    case "orchid": // 4-petal compass
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+          <path d="M12 3v18M3 12h18" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      );
+    case "echo": // concentric waves
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+          <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="12" r="6" opacity=".55"/>
+          <circle cx="12" cy="12" r="9.5" opacity=".25"/>
+        </svg>
+      );
+    case "fern": // leaf
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+          <path d="M5 19c10-1 14-5 15-15-10 1-14 5-15 15z" />
+          <path d="M5 19l9-9" />
+        </svg>
+      );
+    case "iris": // eye / iris
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+          <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" />
+          <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/>
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+// Generic icon set (line, 1.6 stroke) — keep small + consistent
+const I = {
+  home: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round"><path d="M3 11l9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>,
+  feed: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M4 6h16M4 12h12M4 18h8"/></svg>,
+  cond: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 6h8M8 18h8M6 8v8M18 8v8"/></svg>,
+  metrics: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/></svg>,
+  agents: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="9" r="3"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>,
+  plan: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>,
+  reflect: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 4v5h-5"/></svg>,
+  meal: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M5 4v7a3 3 0 0 0 3 3v6M8 4v8M19 4c-2 0-3 2-3 5s1 5 3 5v6"/></svg>,
+  link: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 1 0-6-6l-1 1"/><path d="M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 1 0 6 6l1-1"/></svg>,
+  cog: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>,
+  search: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>,
+  bell: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>,
+  chev: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M9 6l6 6-6 6"/></svg>,
+  chevD: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>,
+  check: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12l5 5L20 7"/></svg>,
+  x: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>,
+  plus: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>,
+  snooze: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="13" r="8"/><path d="M9 10h6l-6 6h6M12 5V3M5 5l1.5 1.5M19 5l-1.5 1.5"/></svg>,
+  edit: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M4 20l4-1L20 7l-3-3L5 16l-1 4z"/></svg>,
+  spark: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></svg>,
+  flame: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"><path d="M12 3s-1 4-4 6c-3 2-4 5-3 8a7 7 0 0 0 14 0c0-3-3-5-5-7s-2-7-2-7z"/></svg>,
+  drop: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 3s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z"/></svg>,
+  bolt: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"><path d="M13 3L4 14h6l-1 7 9-11h-6l1-7z"/></svg>,
+  moon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M20 14a8 8 0 1 1-10-10 7 7 0 0 0 10 10z"/></svg>,
+  sun: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.6 4.6l1.5 1.5M17.9 17.9l1.5 1.5M4.6 19.4l1.5-1.5M17.9 6.1l1.5-1.5"/></svg>,
+  arrow: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>,
+  dots: <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>,
+  filter: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>,
+  info: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>,
+};
+
+Object.assign(window, { AGENTS, AgentGlyph, GlyphSvg, I });
