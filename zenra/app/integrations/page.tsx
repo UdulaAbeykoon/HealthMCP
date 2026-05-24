@@ -156,7 +156,7 @@ function IntegrationCard({
           style={action ? { gap: 6 } : undefined}
         >
           {busy ? <Spinner size={12} /> : null}
-          {action === "slack" ? (connected ? "Test" : "Connect") : connected ? "Manage" : "Connect"}
+          {action === "slack" ? (connected ? "Test" : "Connect") : (action && connected) ? "Manage" : "Connect"}
         </button>
       </div>
     </div>
