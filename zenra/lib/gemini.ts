@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { AGENTS, AGENT_LIST, type AgentId } from "./agents";
 import { VITALS, USER } from "./seed";
+import { HEALTH } from "./health";
 
 const apiKey = process.env.GEMINI_API_KEY;
 const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
@@ -127,16 +128,21 @@ Return ONLY a JSON array. Each item:
   }
 }
 
-/** Morning briefing — the "wow" narration. Follows: greeting → sleep → vitals → get-to-work nudge. */
+/** Morning briefing — the "wow" narration: agent-attributed vitals rundown + a get-to-work nudge. */
 export async function morningBriefing(): Promise<string> {
   const sys = `${TEAM_CONTEXT}\n\nYou are Zenra delivering a spoken morning briefing in one warm voice.`;
   const model = client().getGenerativeModel({ model: MODEL, systemInstruction: sys });
-  const prompt = `Deliver ${USER.name}'s spoken morning briefing. Follow this exact flow, nothing else:
-1. Greet them warmly: start with "Good morning, ${USER.name}."
-2. Tell them how they slept: they got ${VITALS.sleep.asleepLabel} of sleep at ${VITALS.sleep.efficiency}% efficiency.
-3. Run quickly through today's vitals like a rundown: recovery ${VITALS.recovery.score} out of 100, HRV ${VITALS.hrv.value} milliseconds (baseline ${VITALS.hrv.baseline}), resting heart rate ${VITALS.restingHr} bpm, and ${VITALS.steps.value.toLocaleString()} steps so far.
-4. End with EXACTLY this sentence, word for word: "You've got to get to work soon at 9:00 — you'd better hurry!"
-Keep it warm, human, and a little witty — about 5 sentences, written to be spoken aloud. ${STYLE}`;
+  const v = VITALS, h = HEALTH.latest;
+  const prompt = `Deliver ${USER.name}'s spoken morning briefing. Follow this flow:
+1. Greet them: "Good morning, ${USER.name}."
+2. Walk through today's vitals, and CALL OUT BY NAME the agent who watches each one as you go:
+   - Lyra (Sleep): ${v.sleep.asleepLabel} of sleep at ${v.sleep.efficiency}% efficiency.
+   - Sage (Recovery): recovery score ${v.recovery.score} out of 100; HRV ${v.hrv.value} ms versus a ${v.hrv.baseline} baseline; resting heart rate ${v.restingHr} bpm.
+   - Atlas (Movement): ${v.steps.value.toLocaleString()} steps so far, VO2 max around ${h.vo2max}.
+   - Sage also notes breathing ${h.respiratory}/min and blood oxygen ${h.spo2}%.
+   Make it flow naturally — e.g. "Lyra clocked you at…", "Sage says recovery's…", "Atlas has you at…".
+3. Finish with a warm but urgent nudge that work is coming up soon and they'd better hurry — end on something like "you'd better hurry up!".
+Keep it warm, human, a little witty — about 5-6 sentences, written to be spoken aloud. ${STYLE}`;
   const result = await model.generateContent(prompt);
   return result.response.text().trim();
 }
