@@ -127,18 +127,15 @@ Return ONLY a JSON array. Each item:
   }
 }
 
-/** Morning briefing — the "wow" narration. Follows: greeting → sleep → vitals → next commitment + hurry nudge. */
-export async function morningBriefing(nextEvent?: { summary: string; startLabel: string }): Promise<string> {
+/** Morning briefing — the "wow" narration. Follows: greeting → sleep → vitals → get-to-work nudge. */
+export async function morningBriefing(): Promise<string> {
   const sys = `${TEAM_CONTEXT}\n\nYou are Zenra delivering a spoken morning briefing in one warm voice.`;
   const model = client().getGenerativeModel({ model: MODEL, systemInstruction: sys });
-  const cal = nextEvent
-    ? `4. Then look at their calendar: their next thing today is "${nextEvent.summary}" at ${nextEvent.startLabel}. Point them to it with a warm but slightly urgent nudge to get moving — end on something like "you'd better hurry!".`
-    : `4. Then tell them their calendar is clear, so the morning is theirs.`;
   const prompt = `Deliver ${USER.name}'s spoken morning briefing. Follow this exact flow, nothing else:
 1. Greet them warmly: start with "Good morning, ${USER.name}."
 2. Tell them how they slept: they got ${VITALS.sleep.asleepLabel} of sleep at ${VITALS.sleep.efficiency}% efficiency.
 3. Run quickly through today's vitals like a rundown: recovery ${VITALS.recovery.score} out of 100, HRV ${VITALS.hrv.value} milliseconds (baseline ${VITALS.hrv.baseline}), resting heart rate ${VITALS.restingHr} bpm, and ${VITALS.steps.value.toLocaleString()} steps so far.
-${cal}
+4. End with EXACTLY this sentence, word for word: "You've got to get to work soon at 9:00 — you'd better hurry!"
 Keep it warm, human, and a little witty — about 5 sentences, written to be spoken aloud. ${STYLE}`;
   const result = await model.generateContent(prompt);
   return result.response.text().trim();
