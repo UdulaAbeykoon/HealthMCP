@@ -1,3 +1,4 @@
+import React from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Shell } from "@/components/Shell";
@@ -6,11 +7,12 @@ import { I } from "@/components/Icons";
 import { MiniSpark } from "@/components/charts";
 import { AGENTS, AGENT_LIST, type AgentId } from "@/lib/agents";
 import { AGENT_DETAIL } from "@/lib/seed";
+import { AnimatedNumber, Reveal } from "@/components/anim";
 
 // ── Stat sub-component ────────────────────────────────────────────────────────
 function Stat({ label, value, sub, color = "var(--text)" }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   sub: string;
   color?: string;
 }) {
@@ -55,8 +57,9 @@ export default async function AgentDetailPage({
   return (
     <Shell>
       {/* ── Hero card ────────────────────────────────────────────────────── */}
+      <Reveal delay={0}>
       <div
-        className="zr-card"
+        className="zr-card zr-lift"
         style={{
           padding: 28,
           background: `linear-gradient(140deg, color-mix(in oklab, ${a.color}, transparent 88%), transparent 60%), var(--surface-2)`,
@@ -98,8 +101,8 @@ export default async function AgentDetailPage({
               <span className="dot" style={{ background: "var(--accent)" }} />Autonomy · Co-pilot
             </span>
             <div style={{ display: "flex", gap: 8 }}>
-              <button className="zr-btn sm">Pause</button>
-              <button className="zr-btn sm">Settings</button>
+              <button className="zr-btn sm zr-press">Pause</button>
+              <button className="zr-btn sm zr-press">Settings</button>
             </div>
           </div>
         </div>
@@ -109,17 +112,19 @@ export default async function AgentDetailPage({
           display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24,
           marginTop: 28, paddingTop: 20, borderTop: "1px solid var(--border)",
         }}>
-          <Stat label="Actions proposed · 30d" value="142" sub="+18% vs prior month" />
-          <Stat label="Accepted" value="118" sub="83% acceptance" />
+          <Stat label="Actions proposed · 30d" value={<AnimatedNumber value={142} />} sub="+18% vs prior month" />
+          <Stat label="Accepted" value={<AnimatedNumber value={118} />} sub="83% acceptance" />
           <Stat label="Time reclaimed" value="6h 24m" sub="this week" color={a.color} />
-          <Stat label="Reliability" value="0.94" sub="confidence calibration" />
+          <Stat label="Reliability" value={<AnimatedNumber value={0.94} decimals={2} />} sub="confidence calibration" />
         </div>
       </div>
+      </Reveal>
 
       {/* ── What I'm watching + Recent actions ───────────────────────────── */}
+      <Reveal delay={80}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
         {/* Watching */}
-        <div className="zr-card">
+        <div className="zr-card zr-lift">
           <div className="zr-card-head">
             <span className="zr-card-title">What I&apos;m watching</span>
           </div>
@@ -141,7 +146,7 @@ export default async function AgentDetailPage({
         </div>
 
         {/* Recent actions */}
-        <div className="zr-card">
+        <div className="zr-card zr-lift">
           <div className="zr-card-head">
             <span className="zr-card-title">Recent actions</span>
             <span className="zr-card-action">
@@ -179,11 +184,13 @@ export default async function AgentDetailPage({
           </div>
         </div>
       </div>
+      </Reveal>
 
       {/* ── House rules + Coordinates with + Confidence ───────────────────── */}
+      <Reveal delay={160}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
         {/* House rules */}
-        <div className="zr-card">
+        <div className="zr-card zr-lift">
           <div className="zr-card-head">
             <span className="zr-card-title">House rules</span>
           </div>
@@ -206,7 +213,7 @@ export default async function AgentDetailPage({
                 <span style={{ marginLeft: "auto", color: "var(--text-faint)", display: "grid", placeItems: "center", width: 14, height: 14 }}>{I.edit}</span>
               </div>
             ))}
-            <button className="zr-btn sm" style={{ alignSelf: "flex-start", marginTop: 4 }}>
+            <button className="zr-btn sm zr-press" style={{ alignSelf: "flex-start", marginTop: 4 }}>
               <span style={{ width: 14, height: 14, display: "inline-grid", placeItems: "center" }}>{I.plus}</span>
               Add a rule
             </button>
@@ -214,7 +221,7 @@ export default async function AgentDetailPage({
         </div>
 
         {/* Coordinates with */}
-        <div className="zr-card">
+        <div className="zr-card zr-lift">
           <div className="zr-card-head">
             <span className="zr-card-title">Coordinates with</span>
           </div>
@@ -235,7 +242,7 @@ export default async function AgentDetailPage({
         </div>
 
         {/* Confidence over time */}
-        <div className="zr-card">
+        <div className="zr-card zr-lift">
           <div className="zr-card-head">
             <span className="zr-card-title">Confidence over time</span>
           </div>
@@ -245,14 +252,15 @@ export default async function AgentDetailPage({
             <b style={{ color: "var(--text)" }}>27%</b>.
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            <button className="zr-btn sm">
+            <button className="zr-btn sm zr-press">
               <span style={{ width: 14, height: 14, display: "inline-grid", placeItems: "center" }}>{I.spark}</span>
               Calibrate
             </button>
-            <button className="zr-btn ghost sm">Forget last week</button>
+            <button className="zr-btn ghost sm zr-press">Forget last week</button>
           </div>
         </div>
       </div>
+      </Reveal>
     </Shell>
   );
 }

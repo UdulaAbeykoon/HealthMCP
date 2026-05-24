@@ -6,6 +6,8 @@ import { Shell } from "@/components/Shell";
 import { I } from "@/components/Icons";
 import { Pill } from "@/components/charts";
 import { INTEGRATIONS } from "@/lib/seed";
+import { AnimatedNumber, Reveal } from "@/components/anim";
+import { LIFETIME } from "@/lib/health";
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 type ConnState = {
@@ -52,7 +54,7 @@ function IntegrationCard({
   const connected = status === "connected";
   return (
     <div
-      className="zr-card"
+      className="zr-card zr-lift"
       style={{
         padding: 18,
         borderColor: connected ? "var(--border-strong)" : "var(--border)",
@@ -148,7 +150,7 @@ function IntegrationCard({
           {connected ? `synced ${lastSync ?? "live"}` : "—"}
         </div>
         <button
-          className={"zr-btn sm" + (connected ? "" : " primary")}
+          className={"zr-btn sm zr-press" + (connected ? "" : " primary")}
           disabled={busy}
           onClick={() => action && onAct?.(action)}
           style={action ? { gap: 6 } : undefined}
@@ -439,8 +441,8 @@ function IntegrationsBody() {
           </h1>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          <button className="zr-btn">Data export</button>
-          <button className="zr-btn primary">
+          <button className="zr-btn zr-press">Data export</button>
+          <button className="zr-btn primary zr-press">
             <span style={{ width: 16, height: 16, display: "grid", placeItems: "center" }}>{I.plus}</span>
             Add a connection
           </button>
@@ -448,51 +450,75 @@ function IntegrationsBody() {
       </div>
 
       {/* ── Stats strip ────────────────────────────────────────────── */}
-      <div
-        style={{
-          padding: 16,
-          borderRadius: 12,
-          border: "1px solid var(--border)",
-          background: "linear-gradient(120deg, rgba(232,181,122,.04), transparent 60%), var(--surface-2)",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-          gap: 24,
-          marginBottom: 22,
-        }}
-      >
-        {INTEGRATIONS.stats.map((s, i) => (
-          <div key={i}>
-            <div className="zr-eyebrow">{s.l}</div>
+      <Reveal delay={80}>
+        <div
+          style={{
+            padding: 16,
+            borderRadius: 12,
+            border: "1px solid var(--border)",
+            background: "linear-gradient(120deg, rgba(232,181,122,.04), transparent 60%), var(--surface-2)",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+            gap: 24,
+            marginBottom: 22,
+          }}
+        >
+          <div>
+            <div className="zr-eyebrow">Days tracked</div>
             <div className="zr-serif" style={{ fontSize: 26 }}>
-              {s.v}
+              <AnimatedNumber value={LIFETIME.daysTracked} />
             </div>
           </div>
-        ))}
-      </div>
+          <div>
+            <div className="zr-eyebrow">Workouts logged</div>
+            <div className="zr-serif" style={{ fontSize: 26 }}>
+              <AnimatedNumber value={LIFETIME.totalWorkouts} />
+            </div>
+          </div>
+          <div>
+            <div className="zr-eyebrow">Distance · km</div>
+            <div className="zr-serif" style={{ fontSize: 26 }}>
+              <AnimatedNumber value={LIFETIME.totalDistanceKm} decimals={1} />
+            </div>
+          </div>
+          <div>
+            <div className="zr-eyebrow">ECGs recorded</div>
+            <div className="zr-serif" style={{ fontSize: 26 }}>
+              <AnimatedNumber value={LIFETIME.ecgCount} />
+            </div>
+          </div>
+        </div>
+      </Reveal>
 
       {/* ── Wearables & health ─────────────────────────────────────── */}
-      <SectionHead title="Wearables & health" sub="The body-signal layer." />
-      <div style={gridStyle}>
-        {wearablesCards.map((c, i) => (
-          <IntegrationCard key={c.name + i} card={c} onAct={onAct} />
-        ))}
-      </div>
+      <Reveal delay={120}>
+        <SectionHead title="Wearables & health" sub="The body-signal layer." />
+        <div style={gridStyle}>
+          {wearablesCards.map((c, i) => (
+            <IntegrationCard key={c.name + i} card={c} onAct={onAct} />
+          ))}
+        </div>
+      </Reveal>
 
       {/* ── Work & calendar ────────────────────────────────────────── */}
-      <SectionHead title="Work & calendar" sub="So Orchid and Echo can choreograph." />
-      <div style={gridStyle}>
-        {workCards.map((c, i) => (
-          <IntegrationCard key={c.name + i} card={c} onAct={onAct} />
-        ))}
-      </div>
+      <Reveal delay={160}>
+        <SectionHead title="Work & calendar" sub="So Orchid and Echo can choreograph." />
+        <div style={gridStyle}>
+          {workCards.map((c, i) => (
+            <IntegrationCard key={c.name + i} card={c} onAct={onAct} />
+          ))}
+        </div>
+      </Reveal>
 
       {/* ── Environment & lifestyle ────────────────────────────────── */}
-      <SectionHead title="Environment & lifestyle" />
-      <div style={gridStyle}>
-        {ENV_LIST.map((c, i) => (
-          <IntegrationCard key={c.name + i} card={c} />
-        ))}
-      </div>
+      <Reveal delay={200}>
+        <SectionHead title="Environment & lifestyle" />
+        <div style={gridStyle}>
+          {ENV_LIST.map((c, i) => (
+            <IntegrationCard key={c.name + i} card={c} />
+          ))}
+        </div>
+      </Reveal>
 
       {/* ── Permissions ────────────────────────────────────────────── */}
       <div className="zr-card">

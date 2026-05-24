@@ -1,0 +1,445 @@
+{
+  "generatedAt": "2026-05-24T16:35:00.791Z",
+  "source": "Apple Health export",
+  "profile": {
+    "dob": "2006-03-21",
+    "sex": "Male",
+    "age": 20
+  },
+  "latest": {
+    "date": "2026-05-24",
+    "restingHr": 65,
+    "hrv": 73,
+    "hrvBaseline": 73,
+    "respiratory": 15.9,
+    "spo2": 95,
+    "wristTemp": 36.2,
+    "vo2max": 41,
+    "steps": 4848,
+    "activeEnergy": 139
+  },
+  "recovery": {
+    "score": 98,
+    "rings": {
+      "autonomic": 84,
+      "sleepLoad": 86,
+      "strain": 20
+    }
+  },
+  "series": {
+    "hrv14": [
+      44,
+      51,
+      33,
+      84,
+      98,
+      47,
+      57,
+      73,
+      63,
+      75,
+      34,
+      57,
+      91,
+      131
+    ],
+    "hrvSmall": [
+      33,
+      84,
+      98,
+      47,
+      57,
+      73,
+      63,
+      75,
+      34,
+      57,
+      91,
+      131
+    ],
+    "restingHr7": [
+      64,
+      65,
+      62,
+      75,
+      70,
+      64,
+      87
+    ],
+    "respiratory7": [
+      15.9,
+      16.1,
+      16.5,
+      15.9,
+      16.2,
+      15.8,
+      15.7
+    ],
+    "spo2_7": [
+      96,
+      94,
+      95,
+      100,
+      94,
+      94,
+      95
+    ],
+    "wristTemp7": [
+      36.4,
+      36.1,
+      36.1,
+      36.1,
+      36.2,
+      36.5,
+      36.3
+    ],
+    "vo2_7": [
+      39.5,
+      39.9,
+      40.5,
+      39.3,
+      39.7,
+      40.2,
+      41
+    ],
+    "steps14": [
+      4268,
+      7533,
+      4435,
+      3657,
+      1608,
+      5060,
+      5595,
+      5497,
+      5062,
+      899,
+      436,
+      2396,
+      737,
+      4848
+    ],
+    "activeEnergy7": [
+      33,
+      88,
+      9,
+      101,
+      3,
+      7,
+      139
+    ],
+    "readiness7": [
+      87,
+      97,
+      92,
+      99,
+      67,
+      99,
+      99
+    ],
+    "sleepBars": [
+      0.99,
+      0.98,
+      0.97,
+      0.98,
+      0.27,
+      0.95,
+      0.95,
+      0.97,
+      0.97,
+      0.57,
+      0.96,
+      0.96
+    ]
+  },
+  "sleep": {
+    "lastNight": {
+      "date": "2026-05-24",
+      "asleep": 415,
+      "inbed": 431,
+      "awake": 16,
+      "deep": 53,
+      "rem": 118,
+      "core": 244,
+      "eff": 96,
+      "inBedClock": "01:23",
+      "wokeClock": "08:20",
+      "asleepLabel": "6h 55m"
+    },
+    "hypnogram": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      2,
+      1,
+      2,
+      2,
+      2,
+      0,
+      2,
+      0,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1,
+      0
+    ],
+    "nights14": [
+      {
+        "date": "2026-05-02",
+        "asleep": 484,
+        "inbed": 507,
+        "awake": 23,
+        "deep": 70,
+        "rem": 121,
+        "core": 293,
+        "eff": 95
+      },
+      {
+        "date": "2026-05-05",
+        "asleep": 412,
+        "inbed": 419,
+        "awake": 7,
+        "deep": 87,
+        "rem": 95,
+        "core": 230,
+        "eff": 98
+      },
+      {
+        "date": "2026-05-06",
+        "asleep": 423,
+        "inbed": 429,
+        "awake": 6,
+        "deep": 77,
+        "rem": 89,
+        "core": 257,
+        "eff": 99
+      },
+      {
+        "date": "2026-05-07",
+        "asleep": 456,
+        "inbed": 466,
+        "awake": 10,
+        "deep": 64,
+        "rem": 118,
+        "core": 274,
+        "eff": 98
+      },
+      {
+        "date": "2026-05-11",
+        "asleep": 415,
+        "inbed": 426,
+        "awake": 11,
+        "deep": 77,
+        "rem": 92,
+        "core": 246,
+        "eff": 97
+      },
+      {
+        "date": "2026-05-12",
+        "asleep": 443,
+        "inbed": 452,
+        "awake": 9,
+        "deep": 38,
+        "rem": 131,
+        "core": 274,
+        "eff": 98
+      },
+      {
+        "date": "2026-05-13",
+        "asleep": 539,
+        "inbed": 2031,
+        "awake": 11,
+        "deep": 99,
+        "rem": 135,
+        "core": 305,
+        "eff": 27
+      },
+      {
+        "date": "2026-05-14",
+        "asleep": 437,
+        "inbed": 459,
+        "awake": 22,
+        "deep": 75,
+        "rem": 115,
+        "core": 247,
+        "eff": 95
+      },
+      {
+        "date": "2026-05-15",
+        "asleep": 468,
+        "inbed": 495,
+        "awake": 27,
+        "deep": 59,
+        "rem": 121,
+        "core": 288,
+        "eff": 95
+      },
+      {
+        "date": "2026-05-16",
+        "asleep": 507,
+        "inbed": 525,
+        "awake": 18,
+        "deep": 62,
+        "rem": 153,
+        "core": 292,
+        "eff": 97
+      },
+      {
+        "date": "2026-05-17",
+        "asleep": 411,
+        "inbed": 423,
+        "awake": 12,
+        "deep": 80,
+        "rem": 76,
+        "core": 255,
+        "eff": 97
+      },
+      {
+        "date": "2026-05-19",
+        "asleep": 543,
+        "inbed": 949,
+        "awake": 143,
+        "deep": 61,
+        "rem": 115,
+        "core": 367,
+        "eff": 57
+      },
+      {
+        "date": "2026-05-23",
+        "asleep": 514,
+        "inbed": 537,
+        "awake": 23,
+        "deep": 60,
+        "rem": 167,
+        "core": 287,
+        "eff": 96
+      },
+      {
+        "date": "2026-05-24",
+        "asleep": 415,
+        "inbed": 431,
+        "awake": 16,
+        "deep": 53,
+        "rem": 118,
+        "core": 244,
+        "eff": 96
+      }
+    ]
+  },
+  "workouts": [
+    {
+      "type": "Cycling",
+      "date": "2026-05-09",
+      "durationMin": 172,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Walking",
+      "date": "2025-09-29",
+      "durationMin": 15,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Walking",
+      "date": "2025-08-16",
+      "durationMin": 155,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Cycling",
+      "date": "2025-08-10",
+      "durationMin": 14,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Cycling",
+      "date": "2025-08-01",
+      "durationMin": 325,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Running",
+      "date": "2025-07-26",
+      "durationMin": 42,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Running",
+      "date": "2025-07-25",
+      "durationMin": 31,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Walking",
+      "date": "2025-07-05",
+      "durationMin": 50,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Cycling",
+      "date": "2025-07-03",
+      "durationMin": 16,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Running",
+      "date": "2022-09-21",
+      "durationMin": 34,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Running",
+      "date": "2022-09-21",
+      "durationMin": 18,
+      "distanceKm": 0,
+      "energyKcal": 0
+    },
+    {
+      "type": "Walking",
+      "date": "2022-09-20",
+      "durationMin": 35,
+      "distanceKm": 0,
+      "energyKcal": 0
+    }
+  ],
+  "lifetime": {
+    "totalWorkouts": 21,
+    "totalDistanceKm": 4841,
+    "totalStepsM": 7.78,
+    "ecgCount": 9,
+    "mindfulMin": 13,
+    "daysTracked": 1364,
+    "firstDay": "2022-08-08"
+  }
+}

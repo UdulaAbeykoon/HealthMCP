@@ -5,6 +5,7 @@ import { slackConfigured } from "@/lib/integrations/slack";
 import { stravaConfigured } from "@/lib/integrations/strava";
 import { geminiAvailable } from "@/lib/gemini";
 import { voiceAvailable } from "@/lib/voice";
+import { backboardAvailable } from "@/lib/backboard";
 
 export const runtime = "nodejs";
 
@@ -19,5 +20,6 @@ export async function GET() {
     strava: { ...store.connections.strava, configured: stravaConfigured() },
     gemini: { available: geminiAvailable() },
     voice: { available: voiceAvailable() },
+    memory: { available: backboardAvailable() },
   });
 }

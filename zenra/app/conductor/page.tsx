@@ -14,6 +14,7 @@ import {
 } from "@/lib/seed";
 import { useProposals } from "@/lib/client";
 import type { ReasoningStep } from "@/lib/types";
+import { AnimatedNumber, Reveal } from "@/components/anim";
 
 type Variant = 0 | 1 | 2;
 
@@ -50,7 +51,7 @@ function ConductorHeader({ variant, setVariant }: { variant: Variant; setVariant
             <button
               key={v.id}
               onClick={() => setVariant(v.id)}
-              className="zr-btn sm"
+              className="zr-btn sm zr-press"
               style={{
                 background: variant === v.id ? "var(--surface-elev)" : "transparent",
                 border: 0,
@@ -107,10 +108,10 @@ function StatusBar({ huddling, onRerun }: { huddling: boolean; onRerun: () => vo
         </div>
 
         <span className="zr-mono" style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-mute)" }}>
-          7 agents · 24 signals · 7 proposals · 3 commitments
+          <AnimatedNumber value={7} /> agents · <AnimatedNumber value={24} /> signals · <AnimatedNumber value={7} /> proposals · <AnimatedNumber value={3} /> commitments
         </span>
 
-        <button className="zr-btn primary sm" onClick={onRerun} disabled={huddling} style={{ opacity: huddling ? 0.8 : 1 }}>
+        <button className="zr-btn primary sm zr-press" onClick={onRerun} disabled={huddling} style={{ opacity: huddling ? 0.8 : 1 }}>
           {huddling ? (
             <>
               <Spinner /> Your agents are huddling…
@@ -659,12 +660,14 @@ function ReasoningTrail({ steps, huddling }: { steps: ReasoningStep[]; huddling:
       <div style={{ display: "grid", gridTemplateColumns: "72px 32px 1fr", rowGap: 12, alignItems: "center" }}>
         {data.map((s, i) => {
           const a = AGENTS[s.agent];
+          const delay = `${i * 60}ms`;
           return (
             <div key={i} style={{ display: "contents" }}>
-              <div className="zr-mono" style={{ fontSize: 11, color: "var(--text-mute)" }}>
+              <div className="zr-mono zr-fade-in" style={{ fontSize: 11, color: "var(--text-mute)", animationDelay: delay }}>
                 {s.time}
               </div>
               <div
+                className="zr-fade-in"
                 style={{
                   width: 24,
                   height: 24,
@@ -673,13 +676,14 @@ function ReasoningTrail({ steps, huddling }: { steps: ReasoningStep[]; huddling:
                   color: a.color,
                   display: "grid",
                   placeItems: "center",
+                  animationDelay: delay,
                 }}
               >
                 <span style={{ width: 14, height: 14 }}>
                   <GlyphSvg id={s.agent} />
                 </span>
               </div>
-              <div style={{ fontSize: 13, color: "var(--text-2)" }}>
+              <div className="zr-fade-in" style={{ fontSize: 13, color: "var(--text-2)", animationDelay: delay }}>
                 <b style={{ color: "var(--text)" }}>{a.name}</b> · {s.line}
               </div>
             </div>
@@ -734,10 +738,14 @@ export default function ConductorPage() {
       <StatusBar huddling={huddling} onRerun={rerun} />
 
       <div style={{ display: "grid", gap: 14 }}>
-        <div key={variant} className="zr-fade-in">
-          {Body}
-        </div>
-        <ReasoningTrail steps={reasoning} huddling={huddling} />
+        <Reveal key={variant}>
+          <div className="zr-fade-in">
+            {Body}
+          </div>
+        </Reveal>
+        <Reveal delay={120}>
+          <ReasoningTrail steps={reasoning} huddling={huddling} />
+        </Reveal>
       </div>
     </Shell>
   );

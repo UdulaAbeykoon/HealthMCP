@@ -30,12 +30,13 @@ function StepHello() {
       >
         <div className="zr-eyebrow" style={{ marginBottom: 14 }}>Meet the team</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
-          {(["sage", "lyra", "atlas", "orchid", "echo", "fern", "iris"] as AgentId[]).map((id) => {
+          {(["sage", "lyra", "atlas", "orchid", "echo", "fern", "iris"] as AgentId[]).map((id, i) => {
             const a = AGENTS[id];
             return (
               <div
                 key={id}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, width: 68 }}
+                className="zr-pop"
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, width: 68, animationDelay: `${i * 60}ms` }}
               >
                 <span
                   style={{
@@ -230,7 +231,7 @@ function StepAutonomy({
             <button
               key={o.id}
               onClick={() => setPicked(o.id)}
-              className="zr-card"
+              className="zr-card zr-lift zr-press"
               style={{
                 padding: 16,
                 borderColor: on ? "var(--accent)" : "var(--border)",
@@ -384,7 +385,7 @@ function StepConnect({
               ) : (
                 <button
                   onClick={() => toggle(s.id)}
-                  className={"zr-btn sm" + (on ? " primary" : "")}
+                  className={"zr-btn sm zr-press" + (on ? " primary" : "")}
                   style={{ fontSize: 12 }}
                 >
                   {on ? "Linked" : "Link"}
@@ -588,12 +589,14 @@ export default function OnboardingPage() {
 
       {/* ── Center content ── */}
       <div style={{ paddingTop: 24, paddingBottom: 60 }}>
-        {step === 0 && <StepHello />}
-        {step === 1 && <StepGoals selected={goals} toggle={toggleGoal} />}
-        {step === 2 && <StepRhythm />}
-        {step === 3 && <StepAutonomy picked={autonomy} setPicked={setAutonomy} />}
-        {step === 4 && <StepConnect linked={linked} toggle={toggleLinked} />}
-        {step === 5 && <StepPromise />}
+        <div key={step} className="zr-fade-in">
+          {step === 0 && <StepHello />}
+          {step === 1 && <StepGoals selected={goals} toggle={toggleGoal} />}
+          {step === 2 && <StepRhythm />}
+          {step === 3 && <StepAutonomy picked={autonomy} setPicked={setAutonomy} />}
+          {step === 4 && <StepConnect linked={linked} toggle={toggleLinked} />}
+          {step === 5 && <StepPromise />}
+        </div>
 
         {/* ── Navigation ── */}
         <div
@@ -605,20 +608,20 @@ export default function OnboardingPage() {
           }}
         >
           {!isFirst && (
-            <button className="zr-btn" onClick={back}>
+            <button className="zr-btn zr-press" onClick={back}>
               Back
             </button>
           )}
 
           {isLast ? (
-            <Link href="/" className="zr-btn primary" style={{ textDecoration: "none" }}>
+            <Link href="/" className="zr-btn primary zr-press" style={{ textDecoration: "none" }}>
               <span style={{ width: 14, height: 14, display: "grid", placeItems: "center" }}>
                 {I.arrow}
               </span>
               Open Zenra
             </Link>
           ) : (
-            <button className="zr-btn primary" onClick={advance}>
+            <button className="zr-btn primary zr-press" onClick={advance}>
               {nextLabel()}
               <span style={{ width: 14, height: 14, display: "grid", placeItems: "center" }}>
                 {I.chev}

@@ -8,6 +8,7 @@ import { Pill } from "@/components/charts";
 import { AGENTS } from "@/lib/agents";
 import { useProposals } from "@/lib/client";
 import type { Proposal } from "@/lib/types";
+import { AnimatedNumber, Reveal } from "@/components/anim";
 
 /* ─── Spinner SVG (used inline) ─────────────────────────────────── */
 function Spinner({ size = 14 }: { size?: number }) {
@@ -179,7 +180,7 @@ function ProposalCard({
   }
 
   return (
-    <div className="zr-card zr-fade-in" style={{ padding: 22 }}>
+    <div className="zr-card zr-fade-in zr-lift" style={{ padding: 22 }}>
       <div style={{ display: "flex", gap: 16 }}>
         <AgentGlyph agent={p.agent} size="lg" />
 
@@ -266,7 +267,7 @@ function ProposalCard({
           {/* Action buttons */}
           <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
             <button
-              className="zr-btn primary sm"
+              className="zr-btn primary sm zr-press"
               disabled={state.busy}
               onClick={() => doAction("accept")}
               style={{ gap: 6 }}
@@ -276,7 +277,7 @@ function ProposalCard({
             </button>
 
             <button
-              className="zr-btn ghost sm"
+              className="zr-btn ghost sm zr-press"
               disabled={state.busy}
               onClick={() => doAction("snooze")}
               style={{ color: "var(--text-dim)" }}
@@ -285,7 +286,7 @@ function ProposalCard({
             </button>
 
             <button
-              className="zr-btn ghost sm"
+              className="zr-btn ghost sm zr-press"
               onClick={toggleWhy}
               style={{ color: state.showWhy ? "var(--accent)" : "var(--text-dim)" }}
             >
@@ -293,7 +294,7 @@ function ProposalCard({
             </button>
 
             <button
-              className="zr-btn ghost icon sm"
+              className="zr-btn ghost icon sm zr-press"
               disabled={state.busy}
               onClick={() => doAction("dismiss")}
               aria-label="Dismiss"
@@ -352,7 +353,7 @@ function HuddleButton({ orchestrate }: { orchestrate: (focus?: string) => Promis
 
   return (
     <button
-      className="zr-btn primary sm"
+      className="zr-btn primary sm zr-press"
       disabled={busy}
       onClick={run}
       style={{ gap: 8, whiteSpace: "nowrap" }}
@@ -398,7 +399,12 @@ export default function FeedPage() {
         {/* ── Page header ────────────────────────────────────── */}
         <div style={{ marginBottom: 32 }}>
           <div className="zr-eyebrow" style={{ marginBottom: 6 }}>
-            {loading ? "Loading…" : `${pending.length} proposal${pending.length !== 1 ? "s" : ""} · ${agentCount} agent${agentCount !== 1 ? "s" : ""} · Today`}
+            {loading ? "Loading…" : (
+            <>
+              <AnimatedNumber value={pending.length} />{" proposal"}{pending.length !== 1 ? "s" : ""}{" · "}
+              <AnimatedNumber value={agentCount} />{" agent"}{agentCount !== 1 ? "s" : ""}{" · Today"}
+            </>
+          )}
           </div>
           <h1
             className="zr-serif"
@@ -440,12 +446,13 @@ export default function FeedPage() {
               <div key={bucket}>
                 <GroupHeader label={meta.label} sub={meta.sub} />
                 <div style={{ display: "grid", gap: 12 }}>
-                  {items.map((p) => (
-                    <ProposalCard
-                      key={p.id}
-                      p={p}
-                      act={act as (id: string, action: string) => Promise<{ proposal: Proposal; exec?: { ok: boolean; result?: string; live?: boolean } }>}
-                    />
+                  {items.map((p, index) => (
+                    <Reveal key={p.id} delay={index * 70}>
+                      <ProposalCard
+                        p={p}
+                        act={act as (id: string, action: string) => Promise<{ proposal: Proposal; exec?: { ok: boolean; result?: string; live?: boolean } }>}
+                      />
+                    </Reveal>
                   ))}
                 </div>
               </div>

@@ -5,12 +5,17 @@ import { Shell } from "@/components/Shell";
 import { AgentGlyph } from "@/components/AgentGlyph";
 import { I } from "@/components/Icons";
 import { REFLECTION, USER } from "@/lib/seed";
+import { AnimatedNumber, Reveal } from "@/components/anim";
 
 // ─── Mood bar chart (right column) ─────────────────────────────────
 function WeekMoodChart({ data }: { data: [string, number][] }) {
   const max = 10;
+  const avg =
+    REFLECTION.weekMood.reduce((s, [, n]) => s + n, 0) /
+    REFLECTION.weekMood.length;
+
   return (
-    <div className="zr-card">
+    <div className="zr-card zr-lift">
       <div className="zr-card-head">
         <span className="zr-card-title">This week&apos;s mood</span>
       </div>
@@ -38,6 +43,7 @@ function WeekMoodChart({ data }: { data: [string, number][] }) {
               }}
             >
               <div
+                className="zr-grow"
                 style={{
                   width: "100%",
                   height: `${(val / max) * 100}%`,
@@ -45,7 +51,7 @@ function WeekMoodChart({ data }: { data: [string, number][] }) {
                     ? "linear-gradient(to top, var(--ag-iris), color-mix(in oklab, var(--ag-iris), white 30%))"
                     : "color-mix(in oklab, var(--ag-iris), transparent 60%)",
                   borderRadius: 4,
-                  transition: "height .4s ease",
+                  animationDelay: `${i * 60}ms`,
                 }}
               />
               <div style={{ fontSize: 10, color: "var(--text-mute)" }}>{day}</div>
@@ -55,14 +61,8 @@ function WeekMoodChart({ data }: { data: [string, number][] }) {
       </div>
       <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 8 }}>
         Average{" "}
-        <b
-          className="zr-mono"
-          style={{ color: "var(--text)" }}
-        >
-          {(
-            REFLECTION.weekMood.reduce((s, [, n]) => s + n, 0) /
-            REFLECTION.weekMood.length
-          ).toFixed(1)}
+        <b className="zr-mono" style={{ color: "var(--text)" }}>
+          <AnimatedNumber value={avg} decimals={1} />
         </b>{" "}
         · highest after movement days
       </div>
@@ -86,6 +86,7 @@ function EnergyCell({
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onClick()}
+      className="zr-press"
       style={{
         flex: 1,
         height: 56,
@@ -124,7 +125,7 @@ function BodyPill({
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onClick()}
-      className={"zr-pill" + (selected ? " accent" : "")}
+      className={"zr-pill zr-press" + (selected ? " accent" : "")}
       style={{
         cursor: "pointer",
         padding: "6px 12px",
@@ -258,7 +259,7 @@ export default function ReflectionPage() {
                   </div>
                 </div>
                 <button
-                  className="zr-btn ghost sm"
+                  className="zr-btn ghost sm zr-press"
                   style={{ marginLeft: "auto" }}
                 >
                   Skip tonight
@@ -330,7 +331,7 @@ export default function ReflectionPage() {
                     />
                   ))}
                   <span
-                    className="zr-pill"
+                    className="zr-pill zr-press"
                     style={{
                       padding: "6px 12px",
                       borderStyle: "dashed",
@@ -408,7 +409,7 @@ export default function ReflectionPage() {
               {/* ── Actions ─────────────────────────────────────── */}
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <button
-                  className="zr-btn primary"
+                  className="zr-btn primary zr-press"
                   onClick={handleSave}
                   style={{ gap: 8 }}
                 >
@@ -424,8 +425,8 @@ export default function ReflectionPage() {
                   </span>
                   Save and rest
                 </button>
-                <button className="zr-btn">One more prompt</button>
-                <button className="zr-btn ghost">Voice memo instead</button>
+                <button className="zr-btn zr-press">One more prompt</button>
+                <button className="zr-btn ghost zr-press">Voice memo instead</button>
               </div>
             </>
           )}
@@ -434,51 +435,57 @@ export default function ReflectionPage() {
         {/* ── Right: sidebar cards ───────────────────────────────── */}
         <div style={{ display: "grid", gap: 14, gridAutoRows: "max-content" }}>
           {/* Week mood chart */}
-          <WeekMoodChart data={REFLECTION.weekMood} />
+          <Reveal delay={0}>
+            <WeekMoodChart data={REFLECTION.weekMood} />
+          </Reveal>
 
           {/* Patterns Iris is seeing */}
-          <div className="zr-card">
-            <div className="zr-card-head">
-              <span className="zr-card-title">Patterns Iris is seeing</span>
-            </div>
-            <div style={{ display: "grid", gap: 10 }}>
-              {REFLECTION.patterns.map((p, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    gap: 10,
-                    fontSize: 12,
-                    color: "var(--text-2)",
-                  }}
-                >
-                  <span
-                    style={{ width: 18, color: "var(--ag-iris)", flexShrink: 0 }}
-                    className="zr-serif"
+          <Reveal delay={80}>
+            <div className="zr-card zr-lift">
+              <div className="zr-card-head">
+                <span className="zr-card-title">Patterns Iris is seeing</span>
+              </div>
+              <div style={{ display: "grid", gap: 10 }}>
+                {REFLECTION.patterns.map((p, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      fontSize: 12,
+                      color: "var(--text-2)",
+                    }}
                   >
-                    {p.e}
-                  </span>
-                  <span>{p.l}</span>
-                </div>
-              ))}
+                    <span
+                      style={{ width: 18, color: "var(--ag-iris)", flexShrink: 0 }}
+                      className="zr-serif"
+                    >
+                      {p.e}
+                    </span>
+                    <span>{p.l}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          </Reveal>
 
           {/* Last entry */}
-          <div className="zr-card">
-            <div className="zr-card-head">
-              <span className="zr-card-title">Last entry · Sat</span>
-              <span className="zr-card-action" style={{ cursor: "pointer" }}>
-                Open
-              </span>
+          <Reveal delay={160}>
+            <div className="zr-card zr-lift">
+              <div className="zr-card-head">
+                <span className="zr-card-title">Last entry · Sat</span>
+                <span className="zr-card-action" style={{ cursor: "pointer" }}>
+                  Open
+                </span>
+              </div>
+              <p
+                className="zr-serif"
+                style={{ fontSize: 14, lineHeight: 1.45, color: "var(--text-2)" }}
+              >
+                {REFLECTION.lastEntry}
+              </p>
             </div>
-            <p
-              className="zr-serif"
-              style={{ fontSize: 14, lineHeight: 1.45, color: "var(--text-2)" }}
-            >
-              {REFLECTION.lastEntry}
-            </p>
-          </div>
+          </Reveal>
         </div>
       </div>
     </Shell>

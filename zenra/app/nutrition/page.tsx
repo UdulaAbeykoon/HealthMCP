@@ -1,21 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Shell } from "@/components/Shell";
 import { GlyphSvg } from "@/components/AgentGlyph";
 import { I } from "@/components/Icons";
 import { NUTRITION } from "@/lib/seed";
 import { AGENTS } from "@/lib/agents";
+import { AnimatedNumber, Reveal } from "@/components/anim";
 
-// ─── Concentric macro rings (SVG) ────────────────────────────────────
+// ─── Concentric macro rings (SVG) with sweep animation ───────────────
 function MacrosRing() {
   const { kcal, kcalTarget, macros } = NUTRITION;
   const size = 200;
   const radii = [80, 66, 52] as const;
+  const ref = useRef<SVGSVGElement>(null);
+  const [on, setOn] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (es) =>
+        es.forEach((e) => {
+          if (e.isIntersecting) {
+            setOn(true);
+            io.disconnect();
+          }
+        }),
+      { threshold: 0.3 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   return (
     <div style={{ position: "relative", width: size, height: size }}>
       <svg
+        ref={ref}
         width={size}
         height={size}
         style={{ transform: "rotate(-90deg)" }}
@@ -45,6 +66,10 @@ function MacrosRing() {
                 strokeWidth="9"
                 strokeLinecap="round"
                 strokeDasharray={`${filled} ${C - filled}`}
+                style={{
+                  strokeDashoffset: on ? 0 : filled,
+                  transition: `stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1) ${i * 120}ms`,
+                }}
               />
             </g>
           );
@@ -63,7 +88,7 @@ function MacrosRing() {
       >
         <div className="zr-eyebrow">Today · kcal</div>
         <div className="zr-serif" style={{ fontSize: 36, lineHeight: 1 }}>
-          {kcal.toLocaleString()}
+          <AnimatedNumber value={kcal} format={(n) => Math.round(n).toLocaleString()} />
         </div>
         <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
           of {kcalTarget.toLocaleString()} target
@@ -170,7 +195,7 @@ function MealRow({
         {suggested ? (
           <>
             <button
-              className="zr-btn primary sm"
+              className="zr-btn primary sm zr-press"
               onClick={onAccept}
               disabled={accepted}
               aria-label="Accept meal"
@@ -187,7 +212,7 @@ function MealRow({
                 {I.check}
               </span>
             </button>
-            <button className="zr-btn sm" aria-label="Edit meal">
+            <button className="zr-btn sm zr-press" aria-label="Edit meal">
               <span
                 style={{
                   display: "inline-grid",
@@ -202,7 +227,7 @@ function MealRow({
           </>
         ) : (
           <button
-            className="zr-btn ghost icon sm"
+            className="zr-btn ghost icon sm zr-press"
             aria-label="Options"
           >
             <span
@@ -231,9 +256,15 @@ function HydrationCard({
   goal: number;
 }) {
   const [filled, setFilled] = useState(glasses);
+  // Track which glasses were newly filled (for pop animation)
+  const [newlyFilled, setNewlyFilled] = useState<Set<number>>(new Set());
 
   const logGlass = () => {
-    setFilled((prev) => Math.min(prev + 1, goal));
+    const next = Math.min(filled + 1, goal);
+    if (next > filled) {
+      setNewlyFilled((prev) => new Set([...prev, filled]));
+    }
+    setFilled(next);
   };
 
   return (
@@ -245,6 +276,7 @@ function HydrationCard({
         {Array.from({ length: goal }).map((_, i) => (
           <div
             key={i}
+            className={i < filled && newlyFilled.has(i) ? "zr-pop" : undefined}
             style={{
               flex: 1,
               height: 38,
@@ -254,6 +286,7 @@ function HydrationCard({
               border: "1px solid var(--border)",
               opacity: i < filled ? 0.8 : 0.5,
               transition: "background .2s, opacity .2s",
+              animationDelay: newlyFilled.has(i) ? `${i * 40}ms` : "0ms",
             }}
           />
         ))}
@@ -276,7 +309,7 @@ function HydrationCard({
         </span>
       </div>
       <button
-        className="zr-btn sm"
+        className="zr-btn sm zr-press"
         style={{ marginTop: 10, width: "100%", gap: 8 }}
         onClick={logGlass}
         disabled={filled >= goal}
@@ -333,8 +366,8 @@ export default function NutritionPage() {
           </h1>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          <button className="zr-btn">Swap to vegetarian</button>
-          <button className="zr-btn">Generate shopping list</button>
+          <button className="zr-btn zr-press">Swap to vegetarian</button>
+          <button className="zr-btn zr-press">Generate shopping list</button>
         </div>
       </div>
 
@@ -348,158 +381,166 @@ export default function NutritionPage() {
         }}
       >
         {/* ── Left: macro rings + bars ─────────────────────────── */}
-        <div
-          className="zr-card"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: 22,
-          }}
-        >
-          <MacrosRing />
+        <Reveal delay={0}>
           <div
-            style={{ width: "100%", display: "grid", gap: 8, marginTop: 18 }}
+            className="zr-card zr-lift"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              padding: 22,
+            }}
           >
-            {NUTRITION.macros.map((m, i) => (
-              <div key={i}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: 12,
-                    marginBottom: 4,
-                  }}
-                >
-                  <span
+            <MacrosRing />
+            <div
+              style={{ width: "100%", display: "grid", gap: 8, marginTop: 18 }}
+            >
+              {NUTRITION.macros.map((m, i) => (
+                <div key={i}>
+                  <div
                     style={{
                       display: "flex",
-                      alignItems: "center",
-                      gap: 6,
+                      justifyContent: "space-between",
+                      fontSize: 12,
+                      marginBottom: 4,
                     }}
                   >
                     <span
                       style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        background: m.color,
-                        flexShrink: 0,
-                      }}
-                    />
-                    <span style={{ color: "var(--text-dim)" }}>{m.k}</span>
-                  </span>
-                  <span className="zr-mono" style={{ color: "var(--text)" }}>
-                    {m.label}
-                  </span>
-                </div>
-                <div className="zr-bar-track">
-                  <div
-                    className="zr-bar-fill"
-                    style={{ width: `${m.p}%`, background: m.color }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Center: meal plan ─────────────────────────────────── */}
-        <div className="zr-card">
-          <div className="zr-card-head">
-            <span className="zr-card-title">
-              Today&apos;s plan · {NUTRITION.meals.length} meals
-            </span>
-            <span
-              className="zr-card-action"
-              style={{ display: "flex", alignItems: "center", gap: 6 }}
-            >
-              Coordinated with Atlas (workout 16:00){" "}
-              <span
-                style={{
-                  display: "inline-grid",
-                  placeItems: "center",
-                  width: 14,
-                  height: 14,
-                }}
-              >
-                {I.arrow}
-              </span>
-            </span>
-          </div>
-          <div style={{ display: "grid", gap: 8 }}>
-            {NUTRITION.meals.map((m, i) => (
-              <MealRow
-                key={i}
-                {...m}
-                accepted={accepted.has(i)}
-                onAccept={() => acceptMeal(i)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* ── Right: hydration + why + pantry ──────────────────── */}
-        <div style={{ display: "grid", gap: 14, gridAutoRows: "max-content" }}>
-          {/* Hydration */}
-          <HydrationCard
-            glasses={NUTRITION.hydration.glasses}
-            goal={NUTRITION.hydration.goal}
-          />
-
-          {/* Why these meals? */}
-          <div className="zr-card">
-            <div className="zr-card-head">
-              <span className="zr-card-title">Why these meals?</span>
-            </div>
-            <div style={{ display: "grid", gap: 10, fontSize: 12 }}>
-              {NUTRITION.why.map((r, i) => {
-                const a = AGENTS[r.ag];
-                return (
-                  <div key={i} style={{ display: "flex", gap: 8 }}>
-                    <span
-                      style={{
-                        width: 18,
-                        height: 18,
-                        borderRadius: 5,
-                        background: `color-mix(in oklab, ${a.color}, transparent 78%)`,
-                        color: a.color,
-                        display: "grid",
-                        placeItems: "center",
-                        flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
                       }}
                     >
-                      <span style={{ width: 12, height: 12 }}>
-                        <GlyphSvg id={r.ag} />
-                      </span>
+                      <span
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: m.color,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span style={{ color: "var(--text-dim)" }}>{m.k}</span>
                     </span>
-                    <span style={{ color: "var(--text-2)" }}>{r.t}</span>
+                    <span className="zr-mono" style={{ color: "var(--text)" }}>
+                      <AnimatedNumber value={m.v} suffix={`g / ${m.label.split("/ ")[1]}`} />
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Pantry */}
-          <div className="zr-card">
-            <div className="zr-card-head">
-              <span className="zr-card-title">Pantry · in fridge</span>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {NUTRITION.pantry.map((p, i) => (
-                <span key={i} className="zr-pill" style={{ fontSize: 11 }}>
-                  {p}
-                </span>
+                  <div className="zr-bar-track">
+                    <div
+                      className="zr-bar-fill"
+                      style={{ width: `${m.p}%`, background: m.color }}
+                    />
+                  </div>
+                </div>
               ))}
             </div>
-            <button
-              className="zr-btn ghost sm"
-              style={{ marginTop: 12, width: "100%" }}
-            >
-              Open shopping list (5 missing)
-            </button>
           </div>
-        </div>
+        </Reveal>
+
+        {/* ── Center: meal plan ─────────────────────────────────── */}
+        <Reveal delay={80}>
+          <div className="zr-card zr-lift">
+            <div className="zr-card-head">
+              <span className="zr-card-title">
+                Today&apos;s plan · {NUTRITION.meals.length} meals
+              </span>
+              <span
+                className="zr-card-action"
+                style={{ display: "flex", alignItems: "center", gap: 6 }}
+              >
+                Coordinated with Atlas (workout 16:00){" "}
+                <span
+                  style={{
+                    display: "inline-grid",
+                    placeItems: "center",
+                    width: 14,
+                    height: 14,
+                  }}
+                >
+                  {I.arrow}
+                </span>
+              </span>
+            </div>
+            <div style={{ display: "grid", gap: 8 }}>
+              {NUTRITION.meals.map((m, i) => (
+                <MealRow
+                  key={i}
+                  {...m}
+                  accepted={accepted.has(i)}
+                  onAccept={() => acceptMeal(i)}
+                />
+              ))}
+            </div>
+          </div>
+        </Reveal>
+
+        {/* ── Right: hydration + why + pantry ──────────────────── */}
+        <Reveal delay={160}>
+          <div style={{ display: "grid", gap: 14, gridAutoRows: "max-content" }}>
+            {/* Hydration */}
+            <div className="zr-lift">
+              <HydrationCard
+                glasses={NUTRITION.hydration.glasses}
+                goal={NUTRITION.hydration.goal}
+              />
+            </div>
+
+            {/* Why these meals? */}
+            <div className="zr-card zr-lift">
+              <div className="zr-card-head">
+                <span className="zr-card-title">Why these meals?</span>
+              </div>
+              <div style={{ display: "grid", gap: 10, fontSize: 12 }}>
+                {NUTRITION.why.map((r, i) => {
+                  const a = AGENTS[r.ag];
+                  return (
+                    <div key={i} style={{ display: "flex", gap: 8 }}>
+                      <span
+                        style={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: 5,
+                          background: `color-mix(in oklab, ${a.color}, transparent 78%)`,
+                          color: a.color,
+                          display: "grid",
+                          placeItems: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <span style={{ width: 12, height: 12 }}>
+                          <GlyphSvg id={r.ag} />
+                        </span>
+                      </span>
+                      <span style={{ color: "var(--text-2)" }}>{r.t}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Pantry */}
+            <div className="zr-card zr-lift">
+              <div className="zr-card-head">
+                <span className="zr-card-title">Pantry · in fridge</span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {NUTRITION.pantry.map((p, i) => (
+                  <span key={i} className="zr-pill" style={{ fontSize: 11 }}>
+                    {p}
+                  </span>
+                ))}
+              </div>
+              <button
+                className="zr-btn ghost sm zr-press"
+                style={{ marginTop: 12, width: "100%" }}
+              >
+                Open shopping list (5 missing)
+              </button>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </Shell>
   );

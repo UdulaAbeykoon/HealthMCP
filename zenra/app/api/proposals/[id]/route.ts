@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { findProposal } from "@/lib/store";
 import { executeProposal } from "@/lib/execute";
+import { remember } from "@/lib/backboard";
+import { AGENTS } from "@/lib/agents";
 
 export const runtime = "nodejs";
 
@@ -16,10 +18,13 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       p.status = res.ok ? "accepted" : "pending";
       p.result = res.result;
       if (res.externalId) p.externalId = res.externalId;
+      // learn from feedback (fire-and-forget)
+      void remember(`I accepted ${AGENTS[p.agent].name}'s suggestion: "${p.title}". I tend to welcome this kind of help.`).catch(() => {});
       return NextResponse.json({ proposal: p, exec: res });
     }
     case "dismiss":
       p.status = "dismissed";
+      void remember(`I dismissed ${AGENTS[p.agent].name}'s suggestion: "${p.title}". Be more cautious proposing this kind of thing.`).catch(() => {});
       return NextResponse.json({ proposal: p });
     case "snooze":
       p.status = "snoozed";

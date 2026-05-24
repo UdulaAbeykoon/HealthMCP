@@ -6,6 +6,8 @@ import { AgentGlyph } from "@/components/AgentGlyph";
 import { I } from "@/components/Icons";
 import { AGENT_LIST, AGENTS, type AgentId } from "@/lib/agents";
 import { USER } from "@/lib/seed";
+import { Reveal } from "@/components/anim";
+import { MemoryPanel } from "@/components/MemoryPanel";
 
 // ── Toggle switch (interactive) ──────────────────────────────────────
 function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
@@ -126,8 +128,8 @@ export default function SettingsPage() {
     <Shell
       topRight={
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="zr-btn">Sign out</button>
-          <button className="zr-btn primary">Save changes</button>
+          <button className="zr-btn zr-press">Sign out</button>
+          <button className="zr-btn primary zr-press">Save changes</button>
         </div>
       }
     >
@@ -156,7 +158,7 @@ export default function SettingsPage() {
             <div>
               <div className="zr-eyebrow" style={{ marginBottom: 8 }}>Profile · settings</div>
               <h1 className="zr-serif" style={{ fontSize: 36, lineHeight: 1.1 }}>
-                Elena Marsh.
+                {USER.fullName}.
               </h1>
               <p style={{ color: "var(--text-dim)", marginTop: 6, fontSize: 14 }}>
                 Zenra member since {USER.memberSince} · timezone {USER.timezone}
@@ -165,6 +167,7 @@ export default function SettingsPage() {
           </div>
 
           {/* ── You ── */}
+          <Reveal delay={0}>
           <Section
             title="You"
             sub="The basics. We never share this with agents — they only see derived signals."
@@ -199,8 +202,10 @@ export default function SettingsPage() {
               <LabeledInput label="Sex assigned at birth" defaultValue="Female" />
             </div>
           </Section>
+          </Reveal>
 
           {/* ── Autonomy ── */}
+          <Reveal delay={60}>
           <Section
             title="Autonomy"
             sub="How much we do for you. Per-agent overrides apply."
@@ -216,7 +221,7 @@ export default function SettingsPage() {
                     <button
                       key={l.id}
                       onClick={() => setAutonomyLevel(l.id)}
-                      className="zr-card"
+                      className="zr-card zr-press"
                       style={{
                         padding: 12,
                         background: active ? "var(--accent-soft)" : "var(--surface)",
@@ -263,8 +268,10 @@ export default function SettingsPage() {
               />
             </div>
           </Section>
+          </Reveal>
 
           {/* ── Agents ── */}
+          <Reveal delay={120}>
           <Section
             title="Agents"
             sub="Turn agents on or off, or change tone per agent."
@@ -321,8 +328,20 @@ export default function SettingsPage() {
               ))}
             </div>
           </Section>
+          </Reveal>
+
+          {/* ── Memory ── */}
+          <Reveal delay={160}>
+          <Section
+            title="Memory"
+            sub="What your team remembers — powered by Backboard. It learns your baselines and preferences over time."
+          >
+            <MemoryPanel />
+          </Section>
+          </Reveal>
 
           {/* ── Notifications ── */}
+          <Reveal delay={200}>
           <Section title="Notifications" sub="When and how we interrupt.">
             <div className="zr-card">
               <ToggleRow
@@ -353,8 +372,10 @@ export default function SettingsPage() {
               </div>
             </div>
           </Section>
+          </Reveal>
 
           {/* ── Data & privacy ── */}
+          <Reveal delay={240}>
           <Section title="Data & privacy" sub="Your data is yours. Audit anything.">
             <div className="zr-card">
               <ToggleRow
@@ -375,10 +396,10 @@ export default function SettingsPage() {
               />
               <div className="zr-divider" />
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button className="zr-btn">Download all my data</button>
-                <button className="zr-btn">Open audit log</button>
+                <button className="zr-btn zr-press">Download all my data</button>
+                <button className="zr-btn zr-press">Open audit log</button>
                 <button
-                  className="zr-btn danger"
+                  className="zr-btn danger zr-press"
                   style={{ marginLeft: "auto" }}
                 >
                   Delete account
@@ -386,8 +407,10 @@ export default function SettingsPage() {
               </div>
             </div>
           </Section>
+          </Reveal>
 
           {/* ── Disclaimer ── */}
+          <Reveal delay={280}>
           <Section
             title="Disclaimer"
             sub="Not medical advice. Designed to help, not diagnose."
@@ -408,6 +431,7 @@ export default function SettingsPage() {
               proposal as a starting point, not a verdict.
             </div>
           </Section>
+          </Reveal>
         </div>
       </div>
     </Shell>

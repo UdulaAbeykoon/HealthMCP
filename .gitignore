@@ -32,3 +32,9 @@ npm-debug.log*
 Thumbs.db
 .idea/
 .vscode/
+
+# Health data exports (large / private)
+export.zip
+*.zip
+apple_health_export/
+zenra/.data/

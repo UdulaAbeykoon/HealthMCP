@@ -261,6 +261,43 @@ input, select, textarea { font: inherit; }
 .zr-fade-in { animation: fadeIn .5s ease both; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
+/* Scroll-reveal: hidden until .in is added by an IntersectionObserver */
+.zr-reveal { opacity: 0; transform: translateY(14px); transition: opacity .55s cubic-bezier(.2,.7,.2,1), transform .55s cubic-bezier(.2,.7,.2,1); will-change: opacity, transform; }
+.zr-reveal.in { opacity: 1; transform: none; }
+
+/* Hover lift for interactive cards */
+.zr-lift { transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+.zr-lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+/* Pressable */
+.zr-press { transition: transform .08s ease; }
+.zr-press:active { transform: scale(.97); }
+
+/* SVG line draw — use with pathLength="1" on the path */
+.zr-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: drawLine 1.3s ease forwards; }
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
+
+/* Ring sweep — animate strokeDashoffset from full to target via --ring-from */
+@keyframes ringSweep { from { stroke-dashoffset: var(--ring-from); } }
+.zr-ring-anim { animation: ringSweep 1.1s cubic-bezier(.2,.7,.2,1) forwards; }
+
+/* Bar grow */
+.zr-grow { transform-origin: bottom; animation: growUp .7s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes growUp { from { transform: scaleY(0); opacity: .4; } to { transform: scaleY(1); opacity: 1; } }
+
+/* Shimmer skeleton */
+.zr-shimmer { background: linear-gradient(100deg, var(--surface-3) 30%, color-mix(in oklab, var(--accent), transparent 88%) 50%, var(--surface-3) 70%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Soft pop in */
+.zr-pop { animation: popIn .35s cubic-bezier(.2,1.3,.5,1) both; }
+@keyframes popIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .zr-reveal { opacity: 1; transform: none; transition: none; }
+  .zr-draw, .zr-ring-anim, .zr-grow, .zr-pop, .zr-fade-in { animation: none; }
+}
+
 .zr-spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 

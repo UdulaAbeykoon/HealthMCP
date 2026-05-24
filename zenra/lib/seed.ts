@@ -1,138 +1,106 @@
 import type { AgentId } from "./agents";
 import type { Proposal, ReasoningStep } from "./types";
+import { buildVitals, LIFETIME } from "./health";
 
-// ── User ────────────────────────────────────────────────────────────
+// ── User ── from the real Apple Health export ───────────────────────
 export const USER = {
-  name: "Elena",
-  fullName: "Elena Marsh",
-  email: "elena@marsh.studio",
-  initials: "E",
-  pronouns: "she / her",
+  name: "Udula",
+  fullName: "Udula Abeykoon",
+  email: "udulaabeykoon@gmail.com",
+  initials: "U",
+  pronouns: "he / him",
   timezone: "America/New_York",
-  memberSince: "Mar 2026",
+  memberSince: LIFETIME.firstDay?.slice(0, 7) ?? "Aug 2022",
 };
 
-// ── Today's vitals (HealthKit import simulation) ────────────────────
-export const VITALS = {
-  sleep: {
-    asleepLabel: "7h 42m",
-    hours: 7, minutes: 42,
-    inBed: "11:15 PM", woke: "7:02 AM",
-    efficiency: 78,
-    bars: [0.65, 0.78, 0.82, 0.74, 0.88, 0.7, 0.6, 0.85, 0.78, 0.92, 0.7, 0.6],
-    stages: [
-      { k: "Deep", v: "1h 24m", p: 20, color: "var(--accent-2)" },
-      { k: "REM", v: "1h 48m", p: 26, color: "var(--ag-iris)" },
-      { k: "Light", v: "3h 32m", p: 50, color: "var(--ag-lyra)" },
-      { k: "Awake", v: "0h 12m", p: 4, color: "var(--text-mute)" },
-    ],
-    hypnogram: [2,2,3,3,2,1,2,3,3,2,2,1,2,2,3,2,2,1,1,2,2,3,2,1,1,2,2,2,1,0],
-  },
-  recovery: { score: 82, label: "Good", note: "Great recovery yesterday" },
-  hrv: { value: 62, baseline: 58, unit: "ms", series: [56,58,55,57,60,58,61,59,62,60,63,62] },
-  hrv14: [62,60,58,61,55,57,59,55,52,50,56,53,49,48],
-  steps: { value: 8246, goalPct: 82 },
-  restingHr: 54,
-  readiness7: [78, 72, 80, 65, 70, 62, 68],
-  recoveryRings: [
-    { label: "Autonomic", v: 62, color: "var(--ag-sage)", note: "HRV-driven" },
-    { label: "Sleep load", v: 82, color: "var(--ag-lyra)", note: "Last 3 nights" },
-    { label: "Strain", v: 71, color: "var(--ag-atlas)", note: "Recovers in 18h" },
-  ],
-  bodySignals: [
-    { k: "Resting HR", v: "54 bpm", t: "+2 vs 30d", chart: [52,51,52,53,55,54,56] },
-    { k: "Respiratory rate", v: "14.2 /m", t: "stable", chart: [14,14,14.3,14.1,14.2,14.2,14.2] },
-    { k: "SpO₂ avg", v: "97%", t: "normal range", chart: [97,97,98,97,96,97,97] },
-    { k: "Skin temperature", v: "−0.2°C", t: "within range", chart: [0.1,0,-0.1,-0.2,-0.3,-0.2,-0.2] },
-    { k: "VO₂ max (est.)", v: "47.8", t: "+0.4 in 30d", chart: [46.9,47.0,47.1,47.3,47.5,47.7,47.8] },
-  ],
-};
+// ── Today's vitals — derived from the real Apple Health export ──────
+export const VITALS = buildVitals();
 
 // ── Seed proposals — what the team is proposing today ───────────────
 // Times are computed relative to "now" when read; static labels here.
 export const SEED_PROPOSALS: Proposal[] = [
   {
-    id: "p-orchid-resched",
-    agent: "orchid", kind: "calendar_move", bucket: "now", urgent: true,
+    id: "p-orchid-lunch",
+    agent: "orchid", kind: "calendar_create", bucket: "now", urgent: true,
     time: "2 min ago",
-    title: "You slept light last night. Want me to push your 9:00 sync to 10:30?",
-    why: "You earned a slower start. Your 9am is an internal sync, both attendees are flexible, and a later slot lands you in a higher-energy window — so you actually show up sharp instead of foggy.",
+    title: "You're well-recovered but your calendar's packed 11–4. Want me to guard a real lunch at 12:30?",
+    why: "Recovery is sitting at 98 — you've got the energy today, so let's spend it on the right things. There's no break scheduled between your 11am and 4pm, so I'll hold 45 minutes at 12:30 before it fills in.",
     signals: [
-      { text: "Sleep efficiency 78%", color: "var(--ag-lyra)" },
-      { text: "HRV −12% vs baseline", color: "var(--ag-sage)" },
-      { text: "Internal sync · low stakes" },
+      { text: "Recovery 98 · strong", color: "var(--ag-sage)" },
+      { text: "No break 11:00–16:00", color: "var(--ag-orchid)" },
+      { text: "Calendar low-stakes after lunch" },
     ],
-    approveLabel: "Approve & reschedule",
+    approveLabel: "Block 12:30 lunch",
     status: "pending",
-    payload: { summary: "Team sync", fromTime: "09:00", toTime: "10:30", durationMin: 30 },
+    payload: { summary: "Lunch — actually step away", time: "12:30", durationMin: 45 },
   },
   {
     id: "p-echo-hold",
     agent: "echo", kind: "slack_dnd", bucket: "now", urgent: true,
     time: "8 min ago",
-    title: "Slack is loud this morning. I can hold non-urgent pings until 11:30.",
-    why: "12 messages, none flagged urgent, and your focus block starts in 4 minutes. I'll set you to Do Not Disturb and surface anything that actually needs you.",
+    title: "Slack's already buzzing. Want me to hold non-urgent pings during your 9–11 deep-work block?",
+    why: "14 messages queued, none flagged urgent, and your focus block starts in a few minutes. I'll set Do Not Disturb and surface anything that actually needs you.",
     signals: [
-      { text: "12 messages, 0 urgent" },
-      { text: "Focus block in 4 min" },
+      { text: "14 messages, 0 urgent" },
+      { text: "Deep-work block 09:00–11:00" },
     ],
     approveLabel: "Hold pings",
     status: "pending",
-    payload: { until: "11:30", minutes: 120 },
+    payload: { until: "11:00", minutes: 120 },
   },
   {
-    id: "p-atlas-z2",
+    id: "p-atlas-intervals",
     agent: "atlas", kind: "movement", bucket: "morning",
     time: "18 min ago",
-    title: "Zone 2 today instead of the planned intervals. Same hour, gentler load.",
-    why: "Your last three sessions were genuinely hard and recovery is sitting at 62. A Zone 2 day keeps the streak alive without digging the hole deeper — you'll thank me tomorrow.",
+    title: "Recovery's at 98 and HRV is right on baseline — today's a green light for the harder session.",
+    why: "You've had a few easy days and you're fully recovered. This is the day to spend that fitness — intervals at 16:00. I'll let Fern know so you're fuelled for it.",
     signals: [
-      { text: "Recovery 62 (below 70)", color: "var(--ag-sage)" },
-      { text: "Last 3 sessions were hard" },
+      { text: "Recovery 98 · HRV 73 = baseline", color: "var(--ag-sage)" },
+      { text: "3 easy days banked" },
     ],
-    approveLabel: "Swap to Z2",
+    approveLabel: "Plan intervals @ 16:00",
     status: "pending",
-    payload: { from: "Intervals", to: "Zone 2 cardio", durationMin: 45 },
+    payload: { from: "Zone 2", to: "Intervals", durationMin: 45 },
   },
   {
     id: "p-fern-protein",
     agent: "fern", kind: "nutrition", bucket: "morning",
     time: "32 min ago",
-    title: "Front-load protein at lunch — you're light on it two days running.",
-    why: "You're averaging 78g against a 140g target, and you've got a workout at 16:00. A protein-forward lunch sets up recovery and keeps the afternoon crash away.",
+    title: "Hard session later — let's front-load protein at lunch so you actually recover from it.",
+    why: "Atlas has you down for intervals at 16:00. A protein-forward lunch sets up recovery and keeps the afternoon energy steady so you're not running on fumes by dinner.",
     signals: [
-      { text: "Protein 78g / 140g (2-day avg)" },
-      { text: "Workout planned 16:00" },
+      { text: "Workout 16:00 · intervals" },
+      { text: "Protein target 140g" },
     ],
     approveLabel: "Add to plan",
     status: "pending",
-    payload: { meal: "Lunch", targetProtein: 38 },
+    payload: { meal: "Lunch", targetProtein: 40 },
   },
   {
-    id: "p-lyra-winddown",
+    id: "p-lyra-streak",
     agent: "lyra", kind: "sleep", bucket: "later",
     time: "45 min ago",
-    title: "Begin wind-down at 21:00 — a little earlier than usual. Small sleep debt.",
-    why: "You're carrying about 1h12m of sleep debt. An earlier wind-down — lights down, screens away — gets you to your 22:30 target without it feeling like a fight.",
+    title: "You're on a 96%-efficiency streak. Hold the 22:30 wind-down so tomorrow lands as well as today.",
+    why: "Last night was 6h55m at 96% efficiency — that's why today feels good. Let's protect the pattern: lights down and screens away from 21:45 so your 22:30 bedtime stays easy.",
     signals: [
-      { text: "Sleep debt: 1h 12m" },
+      { text: "Sleep efficiency 96%", color: "var(--ag-lyra)" },
       { text: "Target bedtime 22:30" },
     ],
-    approveLabel: "Set wind-down",
+    approveLabel: "Keep wind-down",
     status: "pending",
-    payload: { time: "21:00" },
+    payload: { time: "21:45" },
   },
 ];
 
 // ── Reasoning trail (the morning huddle) ────────────────────────────
 export const REASONING_TRAIL: ReasoningStep[] = [
-  { agent: "lyra", time: "06:32", line: "Sleep efficiency 78% · REM down 14m. Flagging recovery." },
-  { agent: "sage", time: "06:33", line: "HRV reads 48ms (−12% vs 7-day). Recommending a low-stakes morning." },
-  { agent: "orchid", time: "06:34", line: "Scanning the 09:00 sync — internal, both attendees flexible. Proposing 10:30." },
-  { agent: "echo", time: "06:35", line: "Aligning the focus block to the new start. Slack hold until 11:30." },
-  { agent: "atlas", time: "07:01", line: "Recovery 62 < 70 threshold. Swap intervals → Z2 cardio @ 16:00." },
-  { agent: "iris", time: "07:02", line: "Three skipped check-ins. Scheduling a soft prompt for 21:30." },
-  { agent: "fern", time: "07:04", line: "Aligning an earlier dinner (Iris flag). Lunch protein bumped to 38g." },
+  { agent: "lyra", time: "06:32", line: "Slept 6h55m at 96% efficiency. You're genuinely rested — strong base for today." },
+  { agent: "sage", time: "06:33", line: "HRV 73ms, right on your baseline. Recovery 98. This is a green-light day." },
+  { agent: "atlas", time: "07:01", line: "Recovery 98 > 80 threshold, three easy days banked. Clearing you for intervals @ 16:00." },
+  { agent: "echo", time: "06:35", line: "14 Slack messages queued, none urgent. Holding them during your 9–11 deep-work block." },
+  { agent: "orchid", time: "06:34", line: "Calendar's packed 11:00–16:00 with no break. Proposing a 12:30 lunch hold before it fills." },
+  { agent: "fern", time: "07:04", line: "Hard session later — front-loading protein at lunch to set up recovery." },
+  { agent: "iris", time: "07:02", line: "You're on a good streak. Scheduling a light reflection for 21:30 to capture what's working." },
 ];
 
 // ── Conductor: timeline lanes ───────────────────────────────────────
@@ -140,20 +108,20 @@ export interface LaneEvent { s: number; e: number; kind: "signal" | "block" | "w
 export const CONDUCTOR_LANES: { id: AgentId; events: LaneEvent[] }[] = [
   { id: "orchid", events: [
     { s: 7.2, e: 7.4, kind: "signal", t: "Meeting load: heavy" },
-    { s: 8.5, e: 10.5, kind: "block", t: "Sync (moved → 10:30)" },
+    { s: 8.5, e: 10.5, kind: "block", t: "Lunch held · 12:30" },
     { s: 13.5, e: 15, kind: "block", t: "Calls window" },
   ]},
   { id: "lyra", events: [
-    { s: 6, e: 7, kind: "signal", t: "Slept light · 78% eff" },
+    { s: 6, e: 7, kind: "signal", t: "Slept well · 96% eff" },
     { s: 21, e: 22, kind: "block", t: "Wind-down" },
   ]},
   { id: "sage", events: [
-    { s: 6.5, e: 7, kind: "signal", t: "HRV −12%" },
-    { s: 14, e: 15, kind: "watch", t: "Afternoon dip ahead" },
+    { s: 6.5, e: 7, kind: "signal", t: "HRV on baseline" },
+    { s: 14, e: 15, kind: "watch", t: "Green-light day" },
   ]},
   { id: "atlas", events: [
     { s: 7, e: 7.8, kind: "block", t: "Morning walk" },
-    { s: 16, e: 17, kind: "block", t: "Z2 cardio · 45m" },
+    { s: 16, e: 17, kind: "block", t: "Intervals · 45m" },
   ]},
   { id: "echo", events: [
     { s: 8, e: 11.5, kind: "block", t: "Focus mode — Slack held" },
@@ -169,28 +137,28 @@ export const CONDUCTOR_LANES: { id: AgentId; events: LaneEvent[] }[] = [
 ];
 
 export const CONDUCTOR_LINKS = [
-  { fromA: "lyra", fromT: 6.5, toA: "orchid", toT: 8.5, label: "Reschedule 9am" },
-  { fromA: "sage", fromT: 6.7, toA: "atlas", toT: 16, label: "Swap to Z2" },
+  { fromA: "sage", fromT: 6.7, toA: "orchid", toT: 12, label: "Guard lunch" },
+  { fromA: "sage", fromT: 6.7, toA: "atlas", toT: 16, label: "Green-light intervals" },
   { fromA: "echo", fromT: 8.5, toA: "orchid", toT: 13.5, label: "Protect focus" },
   { fromA: "iris", fromT: 21.7, toA: "fern", toT: 18.7, label: "Earlier dinner" },
 ] as const;
 
 export const CONDUCTOR_NETWORK_SIGNALS = [
-  { id: "s1", to: "lyra", label: "Sleep eff 78%", ang: -1.7, r: 310 },
-  { id: "s2", to: "sage", label: "HRV −12%", ang: -0.9, r: 300 },
-  { id: "s3", to: "orchid", label: "9am · low stakes", ang: -0.3, r: 300 },
+  { id: "s1", to: "lyra", label: "Slept 96% eff", ang: -1.7, r: 310 },
+  { id: "s2", to: "sage", label: "HRV on baseline", ang: -0.9, r: 300 },
+  { id: "s3", to: "orchid", label: "Calendar packed", ang: -0.3, r: 300 },
   { id: "s4", to: "echo", label: "Slack: 12 msgs", ang: 0.5, r: 310 },
   { id: "s5", to: "fern", label: "Dinner trend", ang: 1.3, r: 300 },
-  { id: "s6", to: "atlas", label: "3× hard sessions", ang: 2.2, r: 310 },
+  { id: "s6", to: "atlas", label: "3 easy days", ang: 2.2, r: 310 },
   { id: "s7", to: "iris", label: "Missed 3 check-ins", ang: -2.6, r: 300 },
 ] as const;
 
 export const CONDUCTOR_NETWORK_EDGES = [
-  { from: "orchid", to: "lyra", label: "Push 9am", weight: 3 },
-  { from: "atlas", to: "sage", label: "Swap to Z2", weight: 3 },
+  { from: "orchid", to: "sage", label: "Guard lunch", weight: 3 },
+  { from: "atlas", to: "sage", label: "Plan intervals", weight: 3 },
   { from: "echo", to: "orchid", label: "Hold pings", weight: 2 },
   { from: "fern", to: "iris", label: "Earlier dinner", weight: 2 },
-  { from: "lyra", to: "orchid", label: "Wind-down 21:00", weight: 1 },
+  { from: "lyra", to: "orchid", label: "Keep wind-down", weight: 1 },
   { from: "iris", to: "lyra", label: "Reflect nudge", weight: 1 },
 ] as const;
 
