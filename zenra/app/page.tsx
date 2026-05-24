@@ -24,10 +24,20 @@ export default function HomePage() {
   const [voiceOn, setVoiceOn] = useState(false);
   const { speak, stop, speaking } = useVoice();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { toggle: toggleMic, recording, supported: micSupported } = useSpeechInput((t) => send(t, undefined, true));
 
   const orbState: OrbState = speaking ? "speaking" : recording ? "listening" : thinking ? "thinking" : "idle";
   const hasChat = messages.length > 0;
+
+  // Tap the orb to talk: stop playback if it's speaking, otherwise start/stop listening.
+  function handleOrbClick() {
+    if (speaking) { stop(); return; }
+    if (thinking) return;
+    if (micSupported) { setVoiceOn(true); toggleMic(); }
+    else inputRef.current?.focus();
+  }
+  const orbLabel = speaking ? "Tap to stop" : recording ? "Tap to stop listening" : "Tap to talk";
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -89,16 +99,19 @@ export default function HomePage() {
                 Your team has already shaped the day around how you slept. Ask me anything.
               </p>
               <div style={{ marginTop: 24 }}>
-                <Orb size={300} state={orbState} />
+                <Orb size={300} state={orbState} onClick={handleOrbClick} label={orbLabel} />
               </div>
-              <div className="zr-listen" style={{ marginTop: 8 }}>
+              <button className="zr-listen zr-press" onClick={handleOrbClick} style={{ marginTop: 8, cursor: "pointer" }}>
                 {orbState !== "idle" ? (
                   <span className="zr-listen-bars"><span /><span /><span /><span /><span /></span>
                 ) : (
-                  <span style={{ color: "var(--accent)", width: 14, height: 14, display: "grid", placeItems: "center" }}>{I.spark}</span>
+                  <span style={{ color: "var(--accent)", width: 14, height: 14, display: "grid", placeItems: "center" }}>{I.mic}</span>
                 )}
-                {orbState === "listening" ? "Listening…" : orbState === "thinking" ? "Thinking…" : orbState === "speaking" ? "Speaking…" : "Ready when you are"}
-              </div>
+                {orbState === "listening" ? "Listening… tap to stop"
+                  : orbState === "thinking" ? "Thinking…"
+                  : orbState === "speaking" ? "Speaking… tap to stop"
+                  : micSupported ? "Tap the orb to talk" : "Type below to chat"}
+              </button>
               <button className="zr-btn primary sm zr-press" style={{ marginTop: 18 }} onClick={playBriefing} disabled={thinking}>
                 <span style={{ width: 15, height: 15 }}>{I.speaker}</span> Play this morning&apos;s briefing
               </button>
@@ -107,7 +120,7 @@ export default function HomePage() {
 
           {hasChat && (
             <div style={{ width: "100%", maxWidth: 720, display: "flex", alignItems: "center", gap: 14, marginBottom: 10 }}>
-              <Orb size={64} state={orbState} />
+              <Orb size={64} state={orbState} onClick={handleOrbClick} label={orbLabel} />
               <div>
                 <div className="zr-serif" style={{ fontSize: 22 }}>Zenra</div>
                 <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
@@ -149,7 +162,7 @@ export default function HomePage() {
             )}
 
             <form className="zr-msg" onSubmit={(e) => { e.preventDefault(); send(input); }}>
-              <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Message your team, or tap the mic to talk…" />
+              <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Message your team, or tap the orb to talk…" />
               {micSupported && (
                 <button type="button" className={"zr-msg-mic zr-press" + (recording ? " is-recording" : "")} onClick={toggleMic} aria-label="Talk" style={{ width: 40, height: 40 }}>
                   <span style={{ width: 18, height: 18 }}>{I.mic}</span>

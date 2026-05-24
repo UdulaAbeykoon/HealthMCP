@@ -210,6 +210,23 @@ input, select, textarea { font: inherit; }
 .zr-orb svg { animation: orbFloat 7s ease-in-out infinite; }
 .zr-orb.is-speaking svg { animation: orbFloat 2.2s ease-in-out infinite; }
 .zr-orb.is-thinking .zr-orb-glow { animation: orbBreathe 1.6s ease-in-out infinite; }
+
+/* Clickable / tap-to-talk orb */
+.zr-orb.clickable { cursor: pointer; outline: none; }
+.zr-orb.clickable .zr-orb-glow { transition: opacity .25s ease, transform .25s ease; }
+.zr-orb.clickable:hover .zr-orb-glow { opacity: 1; transform: scale(1.14); }
+.zr-orb.clickable:active svg { transform: scale(.97); }
+.zr-orb.clickable:focus-visible { border-radius: 50%; box-shadow: 0 0 0 3px var(--accent-soft-2); }
+/* listening: pulsing ring around the orb */
+.zr-orb.is-listening::after {
+  content: ""; position: absolute; inset: 6%;
+  border-radius: 50%; border: 2px solid var(--accent);
+  animation: orbListen 1.4s ease-out infinite; pointer-events: none;
+}
+@keyframes orbListen {
+  0% { transform: scale(.92); opacity: .55; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
 @keyframes orbFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.015); } }
 @keyframes orbBreathe { 0%, 100% { opacity: .8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
 

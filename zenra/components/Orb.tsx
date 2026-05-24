@@ -1,13 +1,25 @@
 // Zenra — the Orb. SVG cloud-blue sphere with soft halo. state animates breathing/speaking.
 export type OrbState = "idle" | "listening" | "thinking" | "speaking";
 
-export function Orb({ size = 320, state = "idle" }: { size?: number; state?: OrbState }) {
+export function Orb({ size = 320, state = "idle", onClick, label }: {
+  size?: number; state?: OrbState; onClick?: () => void; label?: string;
+}) {
   const cls =
     "zr-orb" +
     (state === "speaking" ? " is-speaking" : "") +
-    (state === "thinking" ? " is-thinking" : "");
+    (state === "thinking" ? " is-thinking" : "") +
+    (state === "listening" ? " is-listening" : "") +
+    (onClick ? " clickable" : "");
   return (
-    <div className={cls} style={{ width: size, height: size }}>
+    <div
+      className={cls}
+      style={{ width: size, height: size }}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={onClick ? label ?? "Tap to talk" : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } : undefined}
+    >
       <div className="zr-orb-glow" />
       <svg viewBox="0 0 320 320" width={size} height={size} style={{ position: "relative", overflow: "visible" }}>
         <defs>
