@@ -4,10 +4,10 @@ import { buildVitals, LIFETIME } from "./health";
 
 // ── User ── from the real Apple Health export ───────────────────────
 export const USER = {
-  name: "Udula",
-  fullName: "Udula Abeykoon",
+  name: "Lucas",
+  fullName: "Lucas Abeykoon",
   email: "udulaabeykoon@gmail.com",
-  initials: "U",
+  initials: "L",
   pronouns: "he / him",
   timezone: "America/New_York",
   memberSince: LIFETIME.firstDay?.slice(0, 7) ?? "Aug 2022",
