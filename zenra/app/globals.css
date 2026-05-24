@@ -207,9 +207,13 @@ input, select, textarea { font: inherit; }
 .zr-orb { position: relative; display: grid; place-items: center; margin: 0 auto; }
 .zr-orb-glow { position: absolute; inset: -40px; background: radial-gradient(circle, rgba(74,108,247,.18) 0%, rgba(74,108,247,.05) 35%, transparent 70%); pointer-events: none; filter: blur(8px); animation: orbBreathe 6s ease-in-out infinite; }
 .zr-orb-shadow { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); width: 220px; height: 26px; background: radial-gradient(ellipse, rgba(74,108,247,.20), transparent 70%); filter: blur(8px); pointer-events: none; }
-.zr-orb svg { animation: orbFloat 7s ease-in-out infinite; }
-.zr-orb.is-speaking svg { animation: orbFloat 2.2s ease-in-out infinite; }
-.zr-orb.is-thinking .zr-orb-glow { animation: orbBreathe 1.6s ease-in-out infinite; }
+.zr-orb svg { animation: orbFloat 7s ease-in-out infinite; transform-origin: center; }
+/* thinking + speaking: a clear "in and out" pulse — the orb breathes as it answers */
+.zr-orb.is-thinking svg { animation: orbPulse 1.5s ease-in-out infinite; }
+.zr-orb.is-speaking svg { animation: orbPulse 1.05s ease-in-out infinite; }
+.zr-orb.is-thinking .zr-orb-glow,
+.zr-orb.is-speaking .zr-orb-glow { animation: orbBreathe 1.2s ease-in-out infinite; opacity: 1; }
+@keyframes orbPulse { 0%, 100% { transform: scale(.94); } 50% { transform: scale(1.08); } }
 
 /* Clickable / tap-to-talk orb */
 .zr-orb.clickable { cursor: pointer; outline: none; }

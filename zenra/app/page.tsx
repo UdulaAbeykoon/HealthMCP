@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Shell } from "@/components/Shell";
 import { Orb, type OrbState } from "@/components/Orb";
 import { I } from "@/components/Icons";
@@ -22,14 +22,14 @@ export default function HomePage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
-  const [voiceOn, setVoiceOn] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
   const { speak, stop, speaking } = useVoice();
-  const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toggle: toggleMic, recording, supported: micSupported } = useSpeechInput((t) => send(t, undefined, true));
 
   const orbState: OrbState = speaking ? "speaking" : recording ? "listening" : thinking ? "thinking" : "idle";
-  const hasChat = messages.length > 0;
+  const lastAnswer = [...messages].reverse().find((m) => m.role === "assistant");
 
   // Tap the orb to talk: stop playback if it's speaking, otherwise start/stop listening.
   function handleOrbClick() {
@@ -39,10 +39,6 @@ export default function HomePage() {
     else inputRef.current?.focus();
   }
   const orbLabel = speaking ? "Tap to stop" : recording ? "Tap to stop listening" : "Tap to talk";
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, thinking]);
 
   async function send(text: string, agent?: AgentId, autoSpeak?: boolean) {
     const content = text.trim();
@@ -89,67 +85,45 @@ export default function HomePage() {
       }
     >
       <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 28, paddingTop: 6, alignItems: "start" }}>
-        {/* center column */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: hasChat ? 0 : 24, minWidth: 0 }}>
-          {!hasChat && (
-            <>
-              <h1 className="zr-serif" style={{ fontSize: 44, textAlign: "center", letterSpacing: "-0.01em", marginBottom: 6 }}>
-                Good morning, {USER.name}
-              </h1>
-              <p style={{ color: "var(--text-dim)", fontSize: 16, textAlign: "center", maxWidth: 460 }}>
-                Your team has already shaped the day around how you slept. Ask me anything.
-              </p>
-              <div style={{ marginTop: 24 }}>
-                <Orb size={300} state={orbState} onClick={handleOrbClick} label={orbLabel} />
-              </div>
-              <button className="zr-listen zr-press" onClick={handleOrbClick} style={{ marginTop: 8, cursor: "pointer" }}>
-                {orbState !== "idle" ? (
-                  <span className="zr-listen-bars"><span /><span /><span /><span /><span /></span>
-                ) : (
-                  <span style={{ color: "var(--accent)", width: 14, height: 14, display: "grid", placeItems: "center" }}>{I.mic}</span>
-                )}
-                {orbState === "listening" ? "Listening… tap to stop"
-                  : orbState === "thinking" ? "Thinking…"
-                  : orbState === "speaking" ? "Speaking… tap to stop"
-                  : micSupported ? "Tap the orb to talk" : "Type below to chat"}
+        {/* center column — orb-first: the answer IS the orb pulsing + speaking */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 18, minWidth: 0 }}>
+          <h1 className="zr-serif" style={{ fontSize: 44, textAlign: "center", letterSpacing: "-0.01em", marginBottom: 6 }}>
+            Good morning, {USER.name}
+          </h1>
+          <p style={{ color: "var(--text-dim)", fontSize: 16, textAlign: "center", maxWidth: 460 }}>
+            Your team has already shaped the day around how you slept. Ask me anything.
+          </p>
+
+          <div style={{ marginTop: 22 }}>
+            <Orb size={300} state={orbState} onClick={handleOrbClick} label={orbLabel} />
+          </div>
+
+          <button className="zr-listen zr-press" onClick={handleOrbClick} style={{ marginTop: 6, cursor: "pointer" }}>
+            {orbState !== "idle" ? (
+              <span className="zr-listen-bars"><span /><span /><span /><span /><span /></span>
+            ) : (
+              <span style={{ color: "var(--accent)", width: 14, height: 14, display: "grid", placeItems: "center" }}>{I.mic}</span>
+            )}
+            {orbState === "listening" ? "Listening… tap to stop"
+              : orbState === "thinking" ? "Thinking…"
+              : orbState === "speaking" ? "Speaking… tap to stop"
+              : micSupported ? "Tap the orb to talk" : "Type below to chat"}
+          </button>
+
+          <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap", justifyContent: "center" }}>
+            <button className="zr-btn primary sm zr-press" onClick={playBriefing} disabled={thinking || speaking}>
+              <span style={{ width: 15, height: 15 }}>{I.speaker}</span> Play this morning&apos;s briefing
+            </button>
+            {messages.length > 0 && (
+              <button className="zr-btn sm zr-press" onClick={() => setShowHistory(true)}>
+                <span style={{ width: 14, height: 14 }}>{I.feed}</span> View conversation
+                <span style={{ marginLeft: 2, fontSize: 11, color: "var(--text-mute)" }}>({messages.length})</span>
               </button>
-              <button className="zr-btn primary sm zr-press" style={{ marginTop: 18 }} onClick={playBriefing} disabled={thinking}>
-                <span style={{ width: 15, height: 15 }}>{I.speaker}</span> Play this morning&apos;s briefing
-              </button>
-            </>
-          )}
+            )}
+          </div>
 
-          {hasChat && (
-            <div style={{ width: "100%", maxWidth: 720, display: "flex", alignItems: "center", gap: 14, marginBottom: 10 }}>
-              <Orb size={64} state={orbState} onClick={handleOrbClick} label={orbLabel} />
-              <div>
-                <div className="zr-serif" style={{ fontSize: 22 }}>Zenra</div>
-                <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
-                  {orbState === "thinking" ? "thinking…" : orbState === "speaking" ? "speaking…" : "your energy team"}
-                </div>
-              </div>
-              <button className="zr-btn ghost sm" style={{ marginLeft: "auto" }} onClick={() => { stop(); setMessages([]); }}>New chat</button>
-            </div>
-          )}
-
-          {hasChat && (
-            <div ref={scrollRef} style={{ width: "100%", maxWidth: 720, display: "flex", flexDirection: "column", gap: 12, maxHeight: "52vh", overflowY: "auto", padding: "8px 4px 16px" }}>
-              {messages.map((m, i) => (
-                <div key={i} className={`zr-bubble ${m.role === "user" ? "user" : "agent"} zr-fade-in`}>
-                  {m.role === "assistant" && m.agent && (
-                    <div style={{ fontSize: 11, color: AGENTS[m.agent].color, marginBottom: 4 }}>{AGENTS[m.agent].name} · {AGENTS[m.agent].role}</div>
-                  )}
-                  {m.content}
-                </div>
-              ))}
-              {thinking && (
-                <div className="zr-bubble agent"><span className="zr-typing"><span /><span /><span /></span></div>
-              )}
-            </div>
-          )}
-
-          <div style={{ width: "100%", maxWidth: 720, marginTop: hasChat ? 8 : 40 }}>
-            {!hasChat && (
+          <div style={{ width: "100%", maxWidth: 640, marginTop: 32 }}>
+            {messages.length === 0 && (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 16 }}>
                 {SUGGESTIONS.map((s, i) => (
                   <button key={i} className="zr-sugg zr-press" onClick={() => send(s.text, s.agent)}>
@@ -176,7 +150,7 @@ export default function HomePage() {
 
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, marginTop: 14, color: "var(--text-mute)", fontSize: 12 }}>
               <span style={{ width: 12, height: 12, display: "grid", placeItems: "center" }}>{I.lock}</span>
-              Your conversations are private. Not medical advice.
+              Spoken answers, private conversation. Not medical advice.
             </div>
           </div>
         </div>
@@ -190,7 +164,66 @@ export default function HomePage() {
           <Reveal delay={280}><StepsCard /></Reveal>
         </div>
       </div>
+
+      {showHistory && (
+        <ConversationHistory
+          messages={messages}
+          onClose={() => setShowHistory(false)}
+          onClear={() => { stop(); setMessages([]); setShowHistory(false); }}
+          onReplay={(text) => speak(text)}
+        />
+      )}
     </Shell>
+  );
+}
+
+function ConversationHistory({ messages, onClose, onClear, onReplay }: {
+  messages: ChatMessage[];
+  onClose: () => void;
+  onClear: () => void;
+  onReplay: (text: string) => void;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 100,
+        background: "color-mix(in oklab, var(--bg), transparent 25%)",
+        backdropFilter: "blur(6px)", display: "grid", placeItems: "center", padding: 24,
+      }}
+      className="zr-fade-in"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="zr-card elev zr-pop"
+        style={{ width: "100%", maxWidth: 640, maxHeight: "82vh", display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "18px 22px", borderBottom: "1px solid var(--border)" }}>
+          <span className="zr-serif" style={{ fontSize: 22 }}>Your conversation</span>
+          <span style={{ fontSize: 12, color: "var(--text-mute)" }}>{messages.length} messages</span>
+          <button className="zr-btn ghost sm zr-press" style={{ marginLeft: "auto" }} onClick={onClear}>Clear</button>
+          <button className="zr-btn icon sm zr-press" aria-label="Close" onClick={onClose}>
+            <span style={{ width: 16, height: 16 }}>{I.x}</span>
+          </button>
+        </div>
+        <div style={{ overflowY: "auto", padding: 18, display: "flex", flexDirection: "column", gap: 12 }}>
+          {messages.map((m, i) => (
+            <div key={i} className={`zr-bubble ${m.role === "user" ? "user" : "agent"}`}>
+              {m.role === "assistant" && m.agent && (
+                <div style={{ fontSize: 11, color: AGENTS[m.agent].color, marginBottom: 4 }}>{AGENTS[m.agent].name} · {AGENTS[m.agent].role}</div>
+              )}
+              {m.content}
+              {m.role === "assistant" && (
+                <button className="zr-btn ghost sm zr-press" onClick={() => onReplay(m.content)}
+                  style={{ display: "flex", marginTop: 8, padding: "2px 8px", fontSize: 11, color: "var(--accent)" }}>
+                  <span style={{ width: 13, height: 13 }}>{I.speaker}</span> Replay
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
