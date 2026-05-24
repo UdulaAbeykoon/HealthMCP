@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { store } from "@/lib/store";
+import { store, ensurePersisted } from "@/lib/store";
 import { calendarConfigured, calendarConnected } from "@/lib/integrations/calendar";
 import { slackConfigured } from "@/lib/integrations/slack";
 import { stravaConfigured } from "@/lib/integrations/strava";
@@ -10,6 +10,7 @@ import { backboardAvailable } from "@/lib/backboard";
 export const runtime = "nodejs";
 
 export async function GET() {
+  ensurePersisted();
   return NextResponse.json({
     calendar: {
       ...store.connections.calendar,

@@ -9,6 +9,7 @@ import { USER, VITALS } from "@/lib/seed";
 import { useVoice, useSpeechInput } from "@/lib/client";
 import type { ChatMessage } from "@/lib/types";
 import { AnimatedNumber, Reveal, AnimatedRing } from "@/components/anim";
+import { Agenda } from "@/components/Agenda";
 
 const SUGGESTIONS: { icon: keyof typeof I; color: string; text: string; agent?: AgentId }[] = [
   { icon: "moon", color: "var(--ag-lyra)", text: "How did I sleep last night?", agent: "lyra" },
@@ -182,10 +183,11 @@ export default function HomePage() {
 
         {/* right rail */}
         <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
-          <Reveal delay={0}><SleepCard /></Reveal>
-          <Reveal delay={70}><RecoveryCard /></Reveal>
-          <Reveal delay={140}><HRVCard /></Reveal>
-          <Reveal delay={210}><StepsCard /></Reveal>
+          <Reveal delay={0}><Agenda /></Reveal>
+          <Reveal delay={70}><SleepCard /></Reveal>
+          <Reveal delay={140}><RecoveryCard /></Reveal>
+          <Reveal delay={210}><HRVCard /></Reveal>
+          <Reveal delay={280}><StepsCard /></Reveal>
         </div>
       </div>
     </Shell>

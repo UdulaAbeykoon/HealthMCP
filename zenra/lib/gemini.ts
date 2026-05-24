@@ -74,10 +74,15 @@ export interface GeneratedProposal {
   why: string;
   signals: string[];
   approveLabel: string;
+  eventId?: string;     // a real calendar event to act on
+  targetTime?: string;  // "HH:MM" for moves/holds
+  durationMin?: number;
 }
 
-/** Ask the team to "huddle" and produce fresh, coordinated proposals as JSON. */
-export async function orchestrateProposals(focus?: string): Promise<GeneratedProposal[]> {
+export interface CalendarContextEvent { id: string; summary: string; startLabel: string; durationMin: number; }
+
+/** Ask the team to "huddle" and produce fresh, coordinated proposals as JSON, grounded in the real calendar. */
+export async function orchestrateProposals(focus?: string, events: CalendarContextEvent[] = []): Promise<GeneratedProposal[]> {
   const sys = `${TEAM_CONTEXT}\n\nYou are the Conductor that coordinates the team's morning huddle.`;
   const model = client().getGenerativeModel({
     model: MODEL,
@@ -85,20 +90,30 @@ export async function orchestrateProposals(focus?: string): Promise<GeneratedPro
     generationConfig: { responseMimeType: "application/json" },
   });
 
+  const calBlock = events.length
+    ? `Here is ${USER.name}'s REAL calendar for today/tomorrow (use these exact eventIds and times when proposing calendar actions):\n${events.map((e) => `- [${e.id}] "${e.summary}" at ${e.startLabel} (${e.durationMin}min)`).join("\n")}`
+    : `No live calendar events were available — propose calendar holds at sensible clock times instead.`;
+
   const prompt = `
+${calBlock}
+
 Based on today's signals${focus ? ` and this focus: "${focus}"` : ""}, produce 3-5 coordinated proposals
-from the team that protect ${USER.name}'s energy and real life today.
-Each proposal must come from the agent whose role fits. Make them feel warm, specific, and a little witty.
+from the team that protect ${USER.name}'s energy and real life today. At least one proposal should act on a REAL
+calendar event above (move it to a better time, or create a protective hold around it). Each proposal must come from
+the agent whose role fits. Make them warm, specific, and a little witty.
 
 Return ONLY a JSON array. Each item:
 {
   "agent": one of "sage"|"lyra"|"atlas"|"orchid"|"echo"|"fern"|"iris",
-  "kind": one of "calendar_move"|"calendar_create"|"slack_dnd"|"slack_status"|"nutrition"|"movement"|"sleep"|"reflection"|"note",
+  "kind": one of "calendar_move"|"calendar_create"|"calendar_delete"|"slack_dnd"|"slack_status"|"nutrition"|"movement"|"sleep"|"reflection"|"note",
   "bucket": "now"|"morning"|"later",
   "title": short first-person proposal addressed to the user (<= 110 chars),
   "why": 1-2 warm sentences explaining the reasoning,
   "signals": array of 2-3 short evidence strings,
-  "approveLabel": short button label (<= 22 chars)
+  "approveLabel": short button label (<= 22 chars),
+  "eventId": (only for calendar_move/calendar_delete) the exact id from the list above,
+  "targetTime": (for calendar_move/calendar_create) a "HH:MM" 24h clock time,
+  "durationMin": (for calendar_create) integer minutes
 }
 `.trim();
 

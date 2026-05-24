@@ -1,8 +1,23 @@
 // In-memory server store. Single-user demo; persists for the dev-server lifetime.
-// Survives HMR via globalThis caching.
+// Survives HMR via globalThis caching, and OAuth tokens persist to disk so the
+// calendar/Slack/Strava connections survive a dev-server restart.
+import fs from "node:fs";
+import path from "node:path";
 import { SEED_PROPOSALS, REASONING_TRAIL } from "./seed";
 import type { Proposal, ReasoningStep } from "./types";
 import type { AgentId } from "./agents";
+
+const TOKENS_FILE = path.join(process.cwd(), ".data", "tokens.json");
+
+function loadTokens(): Record<string, Tokens> {
+  try { return JSON.parse(fs.readFileSync(TOKENS_FILE, "utf8")); } catch { return {}; }
+}
+function persistTokens(tokens: Record<string, Tokens>) {
+  try {
+    fs.mkdirSync(path.dirname(TOKENS_FILE), { recursive: true });
+    fs.writeFileSync(TOKENS_FILE, JSON.stringify(tokens, null, 2));
+  } catch { /* best-effort */ }
+}
 
 export interface ActivityEntry {
   id: string;
@@ -43,16 +58,17 @@ interface ZenraStore {
 }
 
 function seedStore(): ZenraStore {
+  const tokens = loadTokens();
+  const conn = (id: string): Connection =>
+    tokens[id]
+      ? { id, connected: true, mode: "live", account: tokens[id].account, lastSync: new Date().toISOString() }
+      : { id, connected: false, mode: "mock" };
   return {
     proposals: structuredClone(SEED_PROPOSALS),
     reasoning: structuredClone(REASONING_TRAIL),
     activity: [],
-    connections: {
-      calendar: { id: "calendar", connected: false, mode: "mock" },
-      slack: { id: "slack", connected: false, mode: "mock" },
-      strava: { id: "strava", connected: false, mode: "mock" },
-    },
-    tokens: {},
+    connections: { calendar: conn("calendar"), slack: conn("slack"), strava: conn("strava") },
+    tokens,
     oauthStates: [],
     autonomyLevel: 2,
     agentEnabled: { sage: true, lyra: true, atlas: true, orchid: true, echo: true, fern: true, iris: true },
@@ -93,10 +109,16 @@ export function setTokens(provider: string, tokens: Tokens) {
     lastSync: new Date().toISOString(),
     account: tokens.account,
   };
+  persistTokens(store.tokens);
 }
 
 export function getTokens(provider: string): Tokens | undefined {
   return store.tokens[provider];
+}
+
+/** Write the current in-memory tokens to disk if they aren't there yet (e.g. connected before persistence existed). */
+export function ensurePersisted() {
+  if (Object.keys(store.tokens).length && !fs.existsSync(TOKENS_FILE)) persistTokens(store.tokens);
 }
 
 export function newOAuthState(): string {

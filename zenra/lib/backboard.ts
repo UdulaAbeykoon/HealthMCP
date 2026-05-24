@@ -4,6 +4,9 @@
 const BASE = "https://app.backboard.io/api";
 const KEY = process.env.BACKBOARD_API_KEY;
 const ASSISTANT_ID = process.env.BACKBOARD_ASSISTANT_ID;
+// Use a top-tier, capable model for memory reasoning (routed via Backboard/OpenRouter).
+const LLM_PROVIDER = process.env.BACKBOARD_PROVIDER || "openrouter";
+const MODEL = process.env.BACKBOARD_MODEL || "anthropic/claude-sonnet-4.5";
 
 export function backboardAvailable() {
   return Boolean(KEY && ASSISTANT_ID);
@@ -30,7 +33,7 @@ export async function memoryChat(content: string, threadId?: string): Promise<{
   const res = await fetch(`${BASE}/threads/messages`, {
     method: "POST",
     headers: headers(),
-    body: JSON.stringify({ content, assistant_id: ASSISTANT_ID, thread_id: threadId, memory: "Auto", stream: false }),
+    body: JSON.stringify({ content, assistant_id: ASSISTANT_ID, thread_id: threadId, memory: "Auto", stream: false, llm_provider: LLM_PROVIDER, model_name: MODEL }),
   });
   if (!res.ok) throw new Error(`Backboard ${res.status}: ${await res.text()}`);
   const d = await res.json();
@@ -51,6 +54,7 @@ export async function remember(fact: string): Promise<boolean> {
       body: JSON.stringify({
         content: `Please remember this about me for future sessions: ${fact}`,
         assistant_id: ASSISTANT_ID, memory: "Auto", stream: false,
+        llm_provider: LLM_PROVIDER, model_name: MODEL,
       }),
     });
     return true;

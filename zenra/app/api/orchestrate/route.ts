@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { orchestrateProposals, geminiAvailable } from "@/lib/gemini";
 import { store } from "@/lib/store";
+import { listUpcoming, calendarConnected } from "@/lib/integrations/calendar";
 import type { Proposal, ActionKind, Bucket } from "@/lib/types";
 import type { AgentId } from "@/lib/agents";
 
@@ -14,7 +15,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ proposals: store.proposals, generated: 0 });
   }
   try {
-    const gen = await orchestrateProposals(focus);
+    const calEvents = calendarConnected()
+      ? (await listUpcoming(2)).filter((e) => !e.allDay).map((e) => ({ id: e.id, summary: e.summary, startLabel: e.startLabel, durationMin: e.durationMin }))
+      : [];
+    const gen = await orchestrateProposals(focus, calEvents);
     const fresh: Proposal[] = gen
       .filter((g) => VALID_AGENTS.includes(g.agent))
       .map((g, i) => ({
@@ -29,6 +33,11 @@ export async function POST(req: Request) {
         signals: (g.signals ?? []).map((t) => ({ text: t })),
         approveLabel: g.approveLabel ?? "Approve",
         status: "pending",
+        payload: {
+          ...(g.eventId ? { eventId: g.eventId } : {}),
+          ...(g.targetTime ? { toTime: g.targetTime, time: g.targetTime } : {}),
+          ...(g.durationMin ? { durationMin: g.durationMin } : {}),
+        },
       }));
     if (fresh.length) {
       // Put fresh huddle results at the top
